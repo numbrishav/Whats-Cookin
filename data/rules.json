@@ -1,0 +1,121 @@
+{
+  "_decision": "D-01: Frequency caps are SOFT targets (scoring penalties), not hard blocks. They never disqualify a dish — they only lower its suggestion score. User can always pick or swap to any dish regardless of frequency.",
+
+  "meal_structure": {
+    "_rule": "HARD — every main meal (lunch, dinner) must have all five components. Engine must not generate a meal output missing any of these.",
+    "required_components": [
+      {
+        "slot": "grain",
+        "options": ["roti", "rice"],
+        "note": "One carb source per meal — roti OR rice, never both"
+      },
+      {
+        "slot": "protein",
+        "options": ["protein_nonveg", "protein_veg", "curry_nonveg", "curry_veg"],
+        "note": "At least one protein item mandatory in every meal"
+      },
+      {
+        "slot": "sabzi",
+        "options": ["sukhi_sabzi_leafy", "sukhi_sabzi_light", "sukhi_sabzi_dry", "sukhi_sabzi_cruciferous", "sukhi_sabzi_mixed"],
+        "note": "One vegetable dish required — not optional, not substitutable with dal"
+      }
+    ],
+    "required_sides": [
+      {
+        "slot": "salad",
+        "default": "kheera_pyaaz_salad",
+        "note": "Simple fresh salad — always served, not swappable in v1"
+      },
+      {
+        "slot": "curd_raita",
+        "options": ["curd", "garlic_curd", "raita"],
+        "note": "Curd or raita always on the side"
+      }
+    ]
+  },
+
+  "frequency_caps": [
+    {
+      "id": "chicken_weekly_cap",
+      "item_categories": ["protein_nonveg", "curry_nonveg"],
+      "item_tags": ["chicken"],
+      "soft_max_days_per_week": 3,
+      "penalty_weight": 0.7,
+      "description": "Chicken preferred at most 3 days a week — heavy score penalty beyond this, never blocked"
+    },
+    {
+      "id": "eggs_weekly_cap",
+      "item_id": "eggs",
+      "soft_max_days_per_week": 4,
+      "penalty_weight": 0.6,
+      "description": "Eggs preferred at most 4 days a week — score penalty beyond this, never blocked"
+    },
+    {
+      "id": "fish_weekly_target",
+      "item_id": "fish",
+      "soft_target_days_per_week": 1,
+      "penalty_weight": 0.5,
+      "description": "Fish preferred 1 day a week — soft target, user can skip without any block"
+    }
+  ],
+
+  "combination_blocks": [
+    {
+      "id": "no_dal_with_any_nonveg",
+      "trigger_categories": ["protein_nonveg", "curry_nonveg"],
+      "blocked_items": ["dal"],
+      "meal_slot": "any",
+      "type": "hard",
+      "description": "Dal does not go with any non-veg item — chicken, fish, or egg curry in a meal means no dal in the same meal. Applies to both lunch and dinner."
+    },
+    {
+      "id": "chole_rajma_no_dal",
+      "trigger_items": ["chole", "rajma"],
+      "blocked_items": ["dal"],
+      "meal_slot": "any",
+      "type": "hard",
+      "description": "Chole or rajma in a meal means no dal — they are both legumes and nutritionally redundant together"
+    },
+    {
+      "id": "one_carb_per_meal",
+      "rule": "only one carb source per meal",
+      "type": "hard",
+      "description": "Either roti OR rice per meal, never both"
+    }
+  ],
+
+  "carb_rules": [
+    {
+      "id": "dinner_carb_cap_roti",
+      "meal_slot": "dinner",
+      "carb_item": "roti",
+      "max_quantity": 3,
+      "unit": "pieces",
+      "description": "Max 3 roti at dinner"
+    },
+    {
+      "id": "dinner_carb_cap_rice",
+      "meal_slot": "dinner",
+      "carb_item": "rice",
+      "max_quantity": 1.5,
+      "unit": "scoop_dry",
+      "description": "Max 1.5 scoop rice (dry basis) at dinner"
+    }
+  ],
+
+  "dinner_rules": [
+    {
+      "id": "dinner_protein_mandatory",
+      "rule": "protein_first",
+      "required_categories": ["protein_nonveg", "protein_veg", "curry_nonveg", "curry_veg"],
+      "description": "Dinner must include a protein source — paneer, chicken, or fish mandatory"
+    },
+    {
+      "id": "dinner_green_sabzi_preferred",
+      "rule": "prefer_category",
+      "preferred_categories": ["sukhi_sabzi_leafy", "sukhi_sabzi_light"],
+      "meal_slot": "dinner",
+      "description": "Green/light sabzi preferred at dinner"
+    }
+  ]
+}

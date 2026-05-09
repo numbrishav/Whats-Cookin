@@ -1,0 +1,4361 @@
+{
+  "_name": "Dish Library",
+  "_design": "Food classes by texture/consistency. Cuisine is an array — a dish can belong to multiple state-level food cultures. Swaps are food-class-locked. fills_slots for one-pots. pairs_with is suggestion-layer only. See D-17, D-18, D-19 in decisions-log.md.",
+  "version": 6,
+  "cuisine_vocabulary": {
+    "_note": "State/cultural level only. No north_indian or south_indian — those are regions, not food cultures. A dish can belong to multiple cuisines.",
+    "values": [
+      "punjabi",
+      "up_bihari",
+      "rajasthani",
+      "gujarati",
+      "maharashtrian",
+      "bengali",
+      "odia",
+      "tamil",
+      "karnataka",
+      "kerala",
+      "andhra",
+      "hyderabadi",
+      "coastal",
+      "indo_chinese",
+      "continental",
+      "pan_indian"
+    ]
+  },
+  "food_classes": {
+    "grain_staple": {
+      "meal_slot": "grain",
+      "description": "Dry starchy base — roti, rice, paratha, flatbreads, one-pot grains, South Indian tiffin"
+    },
+    "liquid": {
+      "meal_slot": "liquid",
+      "description": "Thin to medium consistency, spoonable — dal varieties, sambhar, kadhi, rajma, chole, rasam, salan, amti"
+    },
+    "curry": {
+      "meal_slot": "curry",
+      "description": "Thick gravy — chicken curry, fish curry, paneer masala, egg curry, regional thick gravies"
+    },
+    "dry_semi_dry": {
+      "meal_slot": "dry",
+      "description": "No gravy or minimal — pan-fried proteins, bhujia, stir-fry sabzis, poriyal, thoran, kootu"
+    },
+    "greens": {
+      "meal_slot": "greens",
+      "description": "Leafy, raw, or lightly cooked — saag, salad, sprouts, kachumber, sarson"
+    },
+    "side_condiment": {
+      "meal_slot": "side",
+      "description": "Accompaniment, never a main slot — curd, raita, chutney, pickle, chaas"
+    },
+    "snack_finger_food": {
+      "meal_slot": "snack",
+      "description": "Standalone, no grain needed — tikka, omelette, vada, chilla, dhokla, pesarattu"
+    },
+    "dessert": {
+      "meal_slot": "dessert",
+      "description": "Sweet, end-of-meal"
+    }
+  },
+  "tag_vocabulary": {
+    "_note": "Standardised tags. Only use tags from this list.",
+    "mood_context": [
+      "comfort",
+      "indulgent",
+      "occasion",
+      "festive",
+      "street-food-style"
+    ],
+    "effort": [
+      "quick",
+      "requires-advance-prep"
+    ],
+    "dietary_signal": [
+      "light-on-stomach",
+      "kid-friendly",
+      "gluten-free",
+      "healthier"
+    ],
+    "flavour_profile": [
+      "spicy",
+      "mild",
+      "coconut-based",
+      "mustard-based",
+      "curd-based",
+      "flavoured",
+      "colorful"
+    ],
+    "nutrition": [
+      "iron-rich",
+      "omega-3",
+      "superfood",
+      "cruciferous",
+      "fiber",
+      "probiotic",
+      "healthy"
+    ],
+    "household": [
+      "wife-friendly",
+      "always-served",
+      "regional"
+    ]
+  },
+  "items": [
+    {
+      "id": "roti",
+      "name": "Roti",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "rice",
+      "name": "Rice",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "paratha",
+      "name": "Paratha",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "makki_roti",
+      "name": "Makki di Roti",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional"
+      ],
+      "pairs_with": [
+        "sarson_ka_saag"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "bhakri",
+      "name": "Bhakri",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "maharashtrian",
+        "gujarati"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional",
+        "healthier"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "thepla",
+      "name": "Thepla",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "gujarati"
+      ],
+      "tags": [
+        "comfort",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "millet_roti",
+      "name": "Millet Roti (Bajra/Jowar)",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "rajasthani",
+        "gujarati",
+        "maharashtrian"
+      ],
+      "tags": [
+        "healthier",
+        "gluten-free",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "jeera_rice",
+      "name": "Jeera Rice",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [
+        "flavoured",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "butter_garlic_rice",
+      "name": "Butter Garlic Rice",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "indo_chinese"
+      ],
+      "tags": [
+        "flavoured",
+        "gluten-free"
+      ],
+      "pairs_with": [
+        "chinese_chicken"
+      ],
+      "calories_per_serving": 290,
+      "protein_g": 5,
+      "carbs_g": 52,
+      "fat_g": 8,
+      "last_used": null
+    },
+    {
+      "id": "lemon_rice",
+      "name": "Lemon Rice",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra"
+      ],
+      "tags": [
+        "quick",
+        "gluten-free",
+        "flavoured"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "curd_rice",
+      "name": "Curd Rice (Thayir Sadam)",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "side"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Rice mixed with curd. Fills grain and side slots. South Indian comfort staple.",
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra"
+      ],
+      "tags": [
+        "comfort",
+        "curd-based",
+        "light-on-stomach",
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "brown_rice",
+      "name": "Brown Rice",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "healthier",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "khichdi",
+      "name": "Khichdi",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "liquid"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Rice + dal cooked together. Fills both grain and liquid slots.",
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "comfort",
+        "light-on-stomach",
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "pongal",
+      "name": "Pongal (Ven Pongal)",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "liquid"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Rice + moong dal cooked together South Indian style with pepper and ghee. Fills grain and liquid slots.",
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "tamil",
+        "karnataka"
+      ],
+      "tags": [
+        "comfort",
+        "light-on-stomach",
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "pairs_with": [
+        "sambhar",
+        "coconut_chutney"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "bisi_bele_bath",
+      "name": "Bisi Bele Bath",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "liquid",
+        "dry"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Karnataka one-pot: rice + toor dal + vegetables + spice powder cooked together. Fills grain, liquid, and dry slots simultaneously.",
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "karnataka"
+      ],
+      "tags": [
+        "comfort",
+        "spicy",
+        "gluten-free",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "dosa",
+      "name": "Dosa",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra",
+        "kerala"
+      ],
+      "tags": [
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "pairs_with": [
+        "sambhar",
+        "coconut_chutney"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "idli",
+      "name": "Idli",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra",
+        "kerala"
+      ],
+      "tags": [
+        "light-on-stomach",
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "pairs_with": [
+        "sambhar",
+        "coconut_chutney"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "appam",
+      "name": "Appam",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "kerala",
+        "tamil"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional",
+        "mild"
+      ],
+      "pairs_with": [
+        "chicken_stew_kerala"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "puttu",
+      "name": "Puttu",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "kerala"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "poha",
+      "name": "Poha",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "maharashtrian",
+        "gujarati",
+        "up_bihari",
+        "madhya_pradeshi"
+      ],
+      "tags": [
+        "quick",
+        "light-on-stomach",
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "upma",
+      "name": "Upma",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra"
+      ],
+      "tags": [
+        "quick",
+        "light-on-stomach",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "toast",
+      "name": "Toast",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "calories_per_serving": 80,
+      "protein_g": 3,
+      "carbs_g": 15,
+      "fat_g": 1,
+      "last_used": null
+    },
+    {
+      "id": "biryani",
+      "name": "Chicken Biryani",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "protein"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Spiced rice + chicken cooked together. Fills grain and protein slots. Traditionally paired with salan and raita.",
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "hyderabadi",
+        "andhra"
+      ],
+      "tags": [
+        "occasion",
+        "requires-advance-prep",
+        "gluten-free"
+      ],
+      "pairs_with": [
+        "salan",
+        "boondi_raita"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        },
+        {
+          "action": "Marinate chicken (2h)",
+          "lead_time_hours": 2,
+          "trigger": "morning_of"
+        }
+      ]
+    },
+    {
+      "id": "dal_dhokli",
+      "name": "Dal Dhokli",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "liquid"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Gujarati one-pot: spiced toor dal with wheat flour dumplings cooked inside.",
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "gujarati"
+      ],
+      "tags": [
+        "comfort",
+        "regional",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "sabudana_khichdi",
+      "name": "Sabudana Khichdi",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "maharashtrian",
+        "gujarati"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional",
+        "comfort",
+        "light-on-stomach"
+      ],
+      "_note": "Sago/tapioca pearls stir-fried with peanuts and spices. Common Maharashtrian fasting and everyday breakfast.",
+      "last_used": null
+    },
+    {
+      "id": "dal_baati",
+      "name": "Dal Baati Churma",
+      "food_class": "grain_staple",
+      "fills_slots": [
+        "grain",
+        "liquid"
+      ],
+      "_one_pot": true,
+      "_one_pot_note": "Rajasthani one-pot: baked wheat balls (baati) served with panchmel dal. Churma (sweet) as accompaniment. Fills grain and liquid slots.",
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "rajasthani"
+      ],
+      "tags": [
+        "festive",
+        "regional",
+        "occasion",
+        "requires-advance-prep"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "dal",
+      "name": "Dal",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "moong_dal",
+      "name": "Moong Dal",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "light-on-stomach",
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "masoor_dal",
+      "name": "Masoor Dal",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "bengali"
+      ],
+      "tags": [
+        "quick",
+        "comfort"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "dal_makhani",
+      "name": "Dal Makhani",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi"
+      ],
+      "tags": [
+        "comfort",
+        "indulgent",
+        "requires-advance-prep"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "panchmel_dal",
+      "name": "Panchmel Dal",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "rajasthani"
+      ],
+      "tags": [
+        "regional",
+        "comfort",
+        "gluten-free"
+      ],
+      "_note": "Five-lentil dal — toor, chana, moong, masoor, urad cooked together. Rajasthani staple, served with dal baati.",
+      "last_used": null
+    },
+    {
+      "id": "sambhar",
+      "name": "Sambhar",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra",
+        "kerala"
+      ],
+      "tags": [
+        "comfort",
+        "gluten-free",
+        "spicy"
+      ],
+      "pairs_with": [
+        "idli",
+        "dosa"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "rasam",
+      "name": "Rasam",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "andhra"
+      ],
+      "tags": [
+        "light-on-stomach",
+        "spicy",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "kadhi",
+      "name": "Kadhi",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi",
+        "up_bihari",
+        "rajasthani"
+      ],
+      "tags": [
+        "comfort",
+        "curd-based"
+      ],
+      "pairs_with": [
+        "rice"
+      ],
+      "meal_note": "Curd-based — no separate side needed when kadhi is on the plate.",
+      "calories_per_serving": 180,
+      "protein_g": 7,
+      "carbs_g": 18,
+      "fat_g": 8,
+      "last_used": null
+    },
+    {
+      "id": "kadhi_gujarati",
+      "name": "Gujarati Kadhi",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "gujarati"
+      ],
+      "tags": [
+        "curd-based",
+        "mild",
+        "regional",
+        "kid-friendly"
+      ],
+      "_note": "Sweeter and thinner than Punjabi/UP kadhi.",
+      "last_used": null
+    },
+    {
+      "id": "chole",
+      "name": "Chole",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "spicy",
+        "street-food-style"
+      ],
+      "rule_trigger": "chole_rajma_no_dal",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Soak overnight (8h)",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "rajma",
+      "name": "Rajma",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "comfort",
+        "kid-friendly"
+      ],
+      "rule_trigger": "chole_rajma_no_dal",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Soak overnight (8h)",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "amti",
+      "name": "Amti",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Maharashtrian toor dal with tamarind or kokum. Thinner and tangier than North Indian dal.",
+      "last_used": null
+    },
+    {
+      "id": "varan",
+      "name": "Varan",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "mild",
+        "light-on-stomach",
+        "regional",
+        "kid-friendly",
+        "gluten-free"
+      ],
+      "_note": "Plain toor dal, Maharashtrian style. Base of varan-bhaat.",
+      "last_used": null
+    },
+    {
+      "id": "pappu",
+      "name": "Pappu",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Andhra toor dal with tamarind — tangier and spicier than generic dal.",
+      "last_used": null
+    },
+    {
+      "id": "cholar_dal",
+      "name": "Cholar Dal",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "regional",
+        "festive",
+        "gluten-free"
+      ],
+      "_note": "Bengali chana dal with coconut and ghee.",
+      "last_used": null
+    },
+    {
+      "id": "moru_kuzhambu",
+      "name": "Moru Kuzhambu",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "kerala",
+        "tamil"
+      ],
+      "tags": [
+        "curd-based",
+        "mild",
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Yogurt-based curry. Replaces dal in South Indian meals.",
+      "last_used": null
+    },
+    {
+      "id": "salan",
+      "name": "Salan",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "hyderabadi"
+      ],
+      "tags": [
+        "regional"
+      ],
+      "pairs_with": [
+        "biryani"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "pulusu",
+      "name": "Pulusu (Andhra Tamarind Gravy)",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Thin tamarind-based Andhra gravy. Most common as fish pulusu (chepa pulusu) or prawn pulusu. Sits between rasam and curry in consistency — classified as liquid.",
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null
+    },
+    {
+      "id": "kolambu",
+      "name": "Kolambu",
+      "food_class": "liquid",
+      "fills_slots": [
+        "liquid"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "tamil",
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Tamarind-based thick liquid — denser than rasam, thinner than curry. Tamil and Andhra staple. Veg version with vegetables; nonveg version (chicken/fish kolambu) uses same base.",
+      "last_used": null
+    },
+    {
+      "id": "chicken_curry",
+      "name": "Chicken Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "comfort"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "serving_size_g": 150,
+      "calories_per_serving": 350,
+      "protein_g": 35,
+      "carbs_g": 12,
+      "fat_g": 18,
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "butter_chicken",
+      "name": "Butter Chicken",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi"
+      ],
+      "tags": [
+        "mild",
+        "indulgent",
+        "kid-friendly"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "kadai_chicken",
+      "name": "Kadai Chicken",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "spicy",
+        "colorful"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "bihari_chicken_curry",
+      "name": "Bihari Chicken Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "up_bihari"
+      ],
+      "tags": [
+        "mustard-based",
+        "regional",
+        "spicy"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "serving_size_g": 200,
+      "calories_per_serving": 380,
+      "protein_g": 38,
+      "carbs_g": 10,
+      "fat_g": 20,
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "mutton_curry",
+      "name": "Mutton Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "up_bihari",
+        "punjabi",
+        "bengali",
+        "rajasthani"
+      ],
+      "tags": [
+        "occasion",
+        "requires-advance-prep"
+      ],
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw mutton from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "keema_matar",
+      "name": "Keema Matar",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "punjabi",
+        "hyderabadi"
+      ],
+      "tags": [
+        "spicy",
+        "quick"
+      ],
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw keema from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "fish_curry",
+      "name": "Fish Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "omega-3"
+      ],
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw fish from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "prawn_masala",
+      "name": "Prawn Masala",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "coastal",
+        "andhra",
+        "kerala",
+        "bengali"
+      ],
+      "tags": [
+        "spicy",
+        "omega-3",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "chicken_chettinad",
+      "name": "Chicken Chettinad",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "tamil"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "occasion"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "fish_curry_coconut",
+      "name": "Fish Curry (Coconut)",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "kerala",
+        "coastal",
+        "karnataka"
+      ],
+      "tags": [
+        "coconut-based",
+        "omega-3",
+        "regional",
+        "mild"
+      ],
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw fish from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "chicken_stew_kerala",
+      "name": "Kerala Chicken Stew",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "kerala"
+      ],
+      "tags": [
+        "coconut-based",
+        "mild",
+        "regional",
+        "comfort"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "pairs_with": [
+        "appam"
+      ],
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "machher_jhol",
+      "name": "Machher Jhol",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "light",
+      "cuisine": [
+        "bengali",
+        "odia"
+      ],
+      "tags": [
+        "omega-3",
+        "regional",
+        "light-on-stomach"
+      ],
+      "_note": "Light Bengali fish curry with potatoes and tomato.",
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null
+    },
+    {
+      "id": "shorshe_maach",
+      "name": "Shorshe Maach",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "mustard-based",
+        "omega-3",
+        "regional"
+      ],
+      "_note": "Fish in mustard paste — signature Bengali dish.",
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null
+    },
+    {
+      "id": "doi_maach",
+      "name": "Doi Maach",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "curd-based",
+        "omega-3",
+        "regional",
+        "mild"
+      ],
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null
+    },
+    {
+      "id": "kosha_mangsho",
+      "name": "Kosha Mangsho",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "spicy",
+        "occasion",
+        "requires-advance-prep",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "chingri_malai_curry",
+      "name": "Chingri Malai Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "coconut-based",
+        "occasion",
+        "regional",
+        "mild"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "chicken_kolhapuri",
+      "name": "Chicken Kolhapuri",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "occasion"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "gutti_vankaya",
+      "name": "Gutti Vankaya",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "regional"
+      ],
+      "_note": "Stuffed baby brinjal in Andhra spice paste.",
+      "last_used": null
+    },
+    {
+      "id": "misal",
+      "name": "Misal",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "spicy",
+        "street-food-style",
+        "regional"
+      ],
+      "_note": "Sprouted moth beans in spicy gravy.",
+      "last_used": null
+    },
+    {
+      "id": "gongura_chicken",
+      "name": "Gongura Chicken",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "regional"
+      ],
+      "_note": "Chicken cooked with gongura (sorrel) leaves — the defining Andhra nonveg curry. Tangy and spicy.",
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "chettinad_fish_curry",
+      "name": "Chettinad Fish Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "heavy",
+      "cuisine": [
+        "tamil"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "omega-3"
+      ],
+      "_note": "Fish curry in Chettinad spice base — kalpasi, marathi mokku, stone flower. Distinct from generic fish curry.",
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw fish from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "kadala_curry",
+      "name": "Kadala Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "kerala"
+      ],
+      "tags": [
+        "coconut-based",
+        "regional"
+      ],
+      "_note": "Black chickpeas in coconut-spice gravy. Classic Kerala breakfast curry, served with puttu or appam.",
+      "pairs_with": [
+        "puttu",
+        "appam"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "fish_molee",
+      "name": "Fish Molee",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "kerala"
+      ],
+      "tags": [
+        "coconut-based",
+        "mild",
+        "regional",
+        "omega-3"
+      ],
+      "_note": "Very mild white coconut milk fish curry. Distinct from spicy Malabar-style fish_curry_coconut — no whole spices, no chilli heat.",
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw fish from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "gatte_ki_sabzi",
+      "name": "Gatte ki Sabzi",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "rajasthani"
+      ],
+      "tags": [
+        "regional",
+        "curd-based"
+      ],
+      "_note": "Gram flour dumplings cooked in spiced yogurt curry. Rajasthani staple.",
+      "last_used": null
+    },
+    {
+      "id": "egg_curry",
+      "name": "Egg Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "egg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "eggitarian",
+      "_note": "Available to both eggitarian (person_2) and nonveg (person_1) persons.",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "comfort"
+      ],
+      "frequency_rule": "eggs_weekly_cap",
+      "serving_size": "1 whole + 3 whites",
+      "calories_per_serving": 220,
+      "protein_g": 22,
+      "carbs_g": 5,
+      "fat_g": 13,
+      "last_used": null
+    },
+    {
+      "id": "palak_paneer",
+      "name": "Palak Paneer",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "iron-rich",
+        "comfort"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "matar_paneer",
+      "name": "Matar Paneer",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "aloo_matar",
+      "name": "Aloo Matar",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "paneer_sabzi",
+      "name": "Paneer Sabzi",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "comfort"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "soya_curry",
+      "name": "Soya Curry",
+      "food_class": "curry",
+      "fills_slots": [
+        "curry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari"
+      ],
+      "tags": [],
+      "last_used": null
+    },
+    {
+      "id": "pan_fried_chicken",
+      "name": "Pan Fried Chicken",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner",
+        "snack"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [],
+      "meal_note": "As snack: serve with 1 roti + garlic curd dip (~350 kcal, ~30g protein total).",
+      "frequency_rule": "chicken_weekly_cap",
+      "serving_size_g": 200,
+      "calories_per_serving": 320,
+      "protein_g": 42,
+      "carbs_g": 2,
+      "fat_g": 14,
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "grilled_chicken",
+      "name": "Grilled Chicken",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "light",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "quick",
+        "healthier"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "calories_per_serving": 240,
+      "protein_g": 40,
+      "carbs_g": 0,
+      "fat_g": 8,
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        },
+        {
+          "action": "Marinate (2h)",
+          "lead_time_hours": 2,
+          "trigger": "morning_of"
+        }
+      ]
+    },
+    {
+      "id": "tandoori_chicken",
+      "name": "Tandoori Chicken",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi"
+      ],
+      "tags": [
+        "occasion",
+        "requires-advance-prep",
+        "spicy"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        },
+        {
+          "action": "Marinate overnight",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "dry_chicken",
+      "name": "Dry Chicken (Sukha)",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "calories_per_serving": 260,
+      "protein_g": 36,
+      "carbs_g": 4,
+      "fat_g": 11,
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "keema",
+      "name": "Keema",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "punjabi",
+        "hyderabadi"
+      ],
+      "tags": [
+        "spicy",
+        "quick"
+      ],
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw keema from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "fish",
+      "name": "Fish (Pan Fried)",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "omega-3",
+        "quick"
+      ],
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw fish from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "fish_fry",
+      "name": "Fish Fry",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner",
+        "snack"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "coastal",
+        "bengali",
+        "andhra",
+        "kerala"
+      ],
+      "tags": [
+        "omega-3",
+        "spicy",
+        "regional"
+      ],
+      "frequency_rule": "fish_weekly_target",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw fish from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "prawn_stir_fry",
+      "name": "Prawn Stir Fry",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "coastal",
+        "bengali"
+      ],
+      "tags": [
+        "quick",
+        "omega-3"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "chinese_chicken",
+      "name": "Chinese Chicken",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "indo_chinese"
+      ],
+      "tags": [],
+      "frequency_rule": "chicken_weekly_cap",
+      "pairs_with": [
+        "butter_garlic_rice"
+      ],
+      "calories_per_serving": 300,
+      "protein_g": 34,
+      "carbs_g": 10,
+      "fat_g": 13,
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "chicken_65",
+      "name": "Chicken 65",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "dinner",
+        "snack"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "andhra",
+        "tamil"
+      ],
+      "tags": [
+        "spicy",
+        "street-food-style",
+        "occasion"
+      ],
+      "frequency_rule": "chicken_weekly_cap",
+      "last_used": null,
+      "prep_steps": [
+        {
+          "action": "Thaw chicken from freezer",
+          "lead_time_hours": 8,
+          "trigger": "night_before"
+        }
+      ]
+    },
+    {
+      "id": "egg_bhurji",
+      "name": "Egg Bhurji",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "egg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "eggitarian",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "quick",
+        "comfort"
+      ],
+      "frequency_rule": "eggs_weekly_cap",
+      "last_used": null
+    },
+    {
+      "id": "paneer_bhurji",
+      "name": "Paneer Bhurji",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "quick",
+        "comfort"
+      ],
+      "calories_per_serving": 280,
+      "protein_g": 18,
+      "carbs_g": 6,
+      "fat_g": 20,
+      "last_used": null
+    },
+    {
+      "id": "capsicum_paneer_sabzi",
+      "name": "Capsicum Paneer Sabzi",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "colorful"
+      ],
+      "calories_per_serving": 260,
+      "protein_g": 14,
+      "carbs_g": 10,
+      "fat_g": 18,
+      "last_used": null
+    },
+    {
+      "id": "beans_broccoli_paneer",
+      "name": "Beans Broccoli Paneer Stir Fry",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "wife-friendly",
+        "cruciferous"
+      ],
+      "calories_per_serving": 240,
+      "protein_g": 16,
+      "carbs_g": 12,
+      "fat_g": 15,
+      "last_used": null
+    },
+    {
+      "id": "soy_bean_sabzi",
+      "name": "Soy Bean Sabzi",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari"
+      ],
+      "tags": [
+        "wife-friendly"
+      ],
+      "calories_per_serving": 180,
+      "protein_g": 14,
+      "carbs_g": 12,
+      "fat_g": 7,
+      "last_used": null
+    },
+    {
+      "id": "paneer_stir_fry",
+      "name": "Paneer Stir Fry",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "tofu",
+      "name": "Tofu",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "light",
+      "cuisine": [
+        "continental",
+        "indo_chinese"
+      ],
+      "tags": [
+        "healthier"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "soya_chunks",
+      "name": "Soya Chunks",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari"
+      ],
+      "tags": [],
+      "last_used": null
+    },
+    {
+      "id": "aloo_jeera",
+      "name": "Aloo Jeera",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "rajasthani"
+      ],
+      "tags": [
+        "quick",
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "methi_aloo",
+      "name": "Methi Aloo",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [
+        "iron-rich"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "mushroom_masala",
+      "name": "Mushroom Masala",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "ker_sangri",
+      "name": "Ker Sangri",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "rajasthani"
+      ],
+      "tags": [
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Dried desert beans (ker) and dried berries (sangri) stir-fried with spices. Quintessential Rajasthani dry sabzi.",
+      "last_used": null
+    },
+    {
+      "id": "bhindi",
+      "name": "Bhindi",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "punjabi",
+        "rajasthani"
+      ],
+      "tags": [
+        "quick",
+        "fiber"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "patta_gobhi",
+      "name": "Patta Gobhi Sauté",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [
+        "quick",
+        "cruciferous"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "poriyal",
+      "name": "Poriyal",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka"
+      ],
+      "tags": [
+        "quick",
+        "coconut-based",
+        "gluten-free"
+      ],
+      "_note": "South Indian dry vegetable stir-fry with mustard seeds and grated coconut. Specific vegetable varies.",
+      "last_used": null
+    },
+    {
+      "id": "thoran",
+      "name": "Thoran",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "kerala"
+      ],
+      "tags": [
+        "coconut-based",
+        "quick",
+        "gluten-free",
+        "regional"
+      ],
+      "_note": "Kerala stir-fry with grated coconut. Lighter and drier than poriyal.",
+      "last_used": null
+    },
+    {
+      "id": "kootu",
+      "name": "Kootu",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "kerala"
+      ],
+      "tags": [
+        "coconut-based",
+        "gluten-free",
+        "regional"
+      ],
+      "_note": "Semi-dry lentil + vegetable with coconut. Thicker than sambhar, drier than curry.",
+      "last_used": null
+    },
+    {
+      "id": "avial",
+      "name": "Avial",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "kerala",
+        "tamil"
+      ],
+      "tags": [
+        "coconut-based",
+        "colorful",
+        "regional",
+        "gluten-free"
+      ],
+      "_note": "Mixed vegetables in coconut-yogurt paste.",
+      "last_used": null
+    },
+    {
+      "id": "aloo_posto",
+      "name": "Aloo Posto",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "comfort",
+        "mild",
+        "regional"
+      ],
+      "_note": "Potatoes in poppy seed paste. Quintessential Bengali home dish.",
+      "last_used": null
+    },
+    {
+      "id": "chorchori",
+      "name": "Chorchori",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "regional",
+        "mustard-based",
+        "colorful"
+      ],
+      "_note": "Bengali mixed vegetable stir-fry with panch phoron.",
+      "last_used": null
+    },
+    {
+      "id": "zunka",
+      "name": "Zunka",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "regional",
+        "spicy",
+        "comfort"
+      ],
+      "_note": "Maharashtrian dry curry made from besan with spices.",
+      "last_used": null
+    },
+    {
+      "id": "undhiyu",
+      "name": "Undhiyu",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "gujarati"
+      ],
+      "tags": [
+        "festive",
+        "requires-advance-prep",
+        "regional",
+        "colorful"
+      ],
+      "_note": "Gujarati mixed vegetable, slow-cooked with methi muthiya.",
+      "last_used": null
+    },
+    {
+      "id": "batata_bhaji",
+      "name": "Batata Bhaji",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "quick",
+        "comfort",
+        "regional",
+        "kid-friendly"
+      ],
+      "_note": "Maharashtrian dry spiced potato bhaji. Simpler and drier than aloo jeera — uses mustard seeds and curry leaves.",
+      "last_used": null
+    },
+    {
+      "id": "royyala_iguru",
+      "name": "Royyala Iguru",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "regional",
+        "omega-3"
+      ],
+      "_note": "Andhra dry prawn/shrimp masala — thick dry masala clinging to prawns, almost no gravy.",
+      "last_used": null
+    },
+    {
+      "id": "beans",
+      "name": "Beans",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "fiber"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "broccoli",
+      "name": "Broccoli",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "cruciferous",
+        "healthier"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "lauki_chana",
+      "name": "Lauki + Chana",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari"
+      ],
+      "tags": [
+        "light-on-stomach"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "torai",
+      "name": "Torai (Nenua)",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "bengali"
+      ],
+      "tags": [
+        "light-on-stomach"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "beans_broccoli",
+      "name": "Beans + Broccoli",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "cruciferous",
+        "fiber"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "gobhi_aloo",
+      "name": "Gobhi Aloo",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "heavy",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [
+        "comfort",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "carrot_beans_capsicum",
+      "name": "Carrot + Beans + Capsicum",
+      "food_class": "dry_semi_dry",
+      "fills_slots": [
+        "dry"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "colorful",
+        "fiber"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "palak",
+      "name": "Palak",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "punjabi",
+        "up_bihari"
+      ],
+      "tags": [
+        "iron-rich",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "sarson_ka_saag",
+      "name": "Sarson ka Saag",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "punjabi"
+      ],
+      "tags": [
+        "iron-rich",
+        "comfort",
+        "regional",
+        "gluten-free"
+      ],
+      "pairs_with": [
+        "makki_roti"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "methi_leaves",
+      "name": "Methi Leaves",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "punjabi",
+        "gujarati"
+      ],
+      "tags": [
+        "iron-rich",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "drumstick_leaves",
+      "name": "Drumstick Leaves (Murungai Keerai)",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "andhra",
+        "kerala"
+      ],
+      "tags": [
+        "superfood",
+        "iron-rich",
+        "regional",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "lal_saag",
+      "name": "Lal Saag",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "bengali"
+      ],
+      "tags": [
+        "iron-rich",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "moringa_leaves",
+      "name": "Moringa Leaves",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "superfood",
+        "iron-rich",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "koshimbir",
+      "name": "Koshimbir",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "maharashtrian"
+      ],
+      "tags": [
+        "regional",
+        "gluten-free",
+        "coconut-based"
+      ],
+      "_note": "Maharashtrian fresh salad — grated cucumber/carrot with roasted peanuts, grated coconut, lemon, and green chilli. Different from kheera pyaaz salad.",
+      "last_used": null
+    },
+    {
+      "id": "kheera_pyaaz_salad",
+      "name": "Kheera Pyaaz Salad",
+      "food_class": "greens",
+      "fills_slots": [
+        "greens"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "_note": "Standard salad — cucumber, onion, tomato, lemon. Not swappable in v1, always present at lunch and dinner.",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "always-served",
+        "gluten-free"
+      ],
+      "calories_per_serving": 35,
+      "protein_g": 1,
+      "carbs_g": 7,
+      "fat_g": 0,
+      "last_used": null
+    },
+    {
+      "id": "garlic_curd",
+      "name": "Garlic Curd",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "punjabi"
+      ],
+      "tags": [
+        "flavoured",
+        "probiotic",
+        "gluten-free"
+      ],
+      "calories_per_serving": 60,
+      "protein_g": 3,
+      "carbs_g": 4,
+      "fat_g": 3,
+      "last_used": null
+    },
+    {
+      "id": "curd",
+      "name": "Curd",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "probiotic",
+        "gluten-free",
+        "kid-friendly"
+      ],
+      "calories_per_serving": 60,
+      "protein_g": 4,
+      "carbs_g": 5,
+      "fat_g": 2,
+      "last_used": null
+    },
+    {
+      "id": "boondi_raita",
+      "name": "Boondi Raita",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "punjabi",
+        "rajasthani"
+      ],
+      "tags": [
+        "flavoured",
+        "probiotic",
+        "gluten-free"
+      ],
+      "calories_per_serving": 90,
+      "protein_g": 4,
+      "carbs_g": 9,
+      "fat_g": 3,
+      "last_used": null
+    },
+    {
+      "id": "sweet_curd",
+      "name": "Sweet Curd (Mishti Doi)",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch",
+        "dinner",
+        "dessert"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "bengali"
+      ],
+      "tags": [
+        "probiotic",
+        "gluten-free",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "coconut_chutney",
+      "name": "Coconut Chutney",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "karnataka",
+        "kerala",
+        "andhra"
+      ],
+      "tags": [
+        "coconut-based",
+        "gluten-free",
+        "regional"
+      ],
+      "pairs_with": [
+        "idli",
+        "dosa"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "tomato_chutney",
+      "name": "Tomato Chutney",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "tamil",
+        "andhra"
+      ],
+      "tags": [
+        "spicy",
+        "gluten-free",
+        "regional"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "green_chutney",
+      "name": "Green Chutney",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "quick",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "pickle",
+      "name": "Pickle (Achar)",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "lunch",
+        "dinner"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "spicy",
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "chaas",
+      "name": "Chaas (Buttermilk)",
+      "food_class": "side_condiment",
+      "fills_slots": [
+        "side"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "lunch"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "gujarati",
+        "rajasthani",
+        "punjabi"
+      ],
+      "tags": [
+        "probiotic",
+        "gluten-free",
+        "light-on-stomach"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "masala_omelette",
+      "name": "Masala Omelette",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "egg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "eggitarian",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "frequency_rule": "eggs_weekly_cap",
+      "last_used": null
+    },
+    {
+      "id": "mushroom_cheese_omelette",
+      "name": "Mushroom Cheese Omelette",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "egg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "eggitarian",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "indulgent"
+      ],
+      "frequency_rule": "eggs_weekly_cap",
+      "last_used": null
+    },
+    {
+      "id": "soy_omelette",
+      "name": "Soy Omelette",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "gluten-free"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "boiled_eggs",
+      "name": "Boiled Eggs",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "egg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "eggitarian",
+      "protein_primary": true,
+      "weight": "light",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "quick",
+        "gluten-free"
+      ],
+      "frequency_rule": "eggs_weekly_cap",
+      "last_used": null
+    },
+    {
+      "id": "chicken_omelette",
+      "name": "Chicken Omelette",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "nonveg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "nonveg",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [],
+      "frequency_rule": "eggs_weekly_cap",
+      "last_used": null
+    },
+    {
+      "id": "paneer_toast",
+      "name": "Paneer Toast",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "moong_dal_chilla",
+      "name": "Moong Dal Chilla",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": true,
+      "weight": "light",
+      "cuisine": [
+        "up_bihari",
+        "rajasthani"
+      ],
+      "tags": [
+        "gluten-free",
+        "light-on-stomach",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "dhokla",
+      "name": "Dhokla",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "gujarati"
+      ],
+      "tags": [
+        "mild",
+        "regional",
+        "light-on-stomach",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "medu_vada",
+      "name": "Medu Vada",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "tamil",
+        "karnataka"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional"
+      ],
+      "pairs_with": [
+        "sambhar",
+        "coconut_chutney"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "pesarattu",
+      "name": "Pesarattu",
+      "food_class": "snack_finger_food",
+      "fills_slots": [
+        "snack"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "breakfast",
+        "snack"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "andhra"
+      ],
+      "tags": [
+        "gluten-free",
+        "regional",
+        "light-on-stomach"
+      ],
+      "_note": "Green moong dal crepe, Andhra breakfast.",
+      "last_used": null
+    },
+    {
+      "id": "overnight_oats",
+      "name": "Overnight Oats",
+      "food_class": "dessert",
+      "fills_slots": [
+        "dessert"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "dessert"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "healthy",
+        "requires-advance-prep"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "ice_cream",
+      "name": "Ice Cream",
+      "food_class": "dessert",
+      "fills_slots": [
+        "dessert"
+      ],
+      "diet_type": "veg",
+      "status": "active",
+      "meal_preference": [
+        "dessert"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "medium",
+      "cuisine": [
+        "pan_indian"
+      ],
+      "tags": [
+        "indulgent",
+        "occasion",
+        "kid-friendly"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "dark_chocolate",
+      "name": "Dark Chocolate",
+      "food_class": "dessert",
+      "fills_slots": [
+        "dessert"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "dessert"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "indulgent"
+      ],
+      "last_used": null
+    },
+    {
+      "id": "flavoured_yogurt",
+      "name": "Flavoured Yogurt",
+      "food_class": "dessert",
+      "fills_slots": [
+        "dessert"
+      ],
+      "diet_type": "veg",
+      "status": "reserve",
+      "meal_preference": [
+        "dessert"
+      ],
+      "person_scope": "shared",
+      "protein_primary": false,
+      "weight": "light",
+      "cuisine": [
+        "continental"
+      ],
+      "tags": [
+        "probiotic",
+        "gluten-free"
+      ],
+      "last_used": null
+    }
+  ],
+  "macro_template": {
+    "_note": "All macro fields optional and nullable. Add manually per dish for calorie/protein estimates on home screen (D-13). Display only in v1.",
+    "calories_per_serving": null,
+    "protein_g": null,
+    "carbs_g": null,
+    "fat_g": null
+  }
+}

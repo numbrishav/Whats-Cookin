@@ -1,0 +1,45 @@
+{
+  "people_count": 2,
+  "members": [
+    {
+      "id": "person_1",
+      "label": "Me",
+      "diet_type": "nonveg",
+      "is_primary": true,
+      "tracks_nutrition": true
+    },
+    {
+      "id": "person_2",
+      "label": "Wife",
+      "diet_type": "eggitarian",
+      "is_primary": false,
+      "tracks_nutrition": false
+    }
+  ],
+  "meal_model": "shared_with_split_protein",
+  "diet_type_options": ["veg", "eggitarian", "nonveg"],
+
+  "cuisine_preferences": ["up_bihari", "hyderabadi"],
+  "_cuisine_preferences_note": "Array — household can be a mix. Set during onboarding. Used to order the dish quick-pick screen (matching cuisines surface first) and as a soft scoring boost in suggestions (same food_class + matching cuisine scores slightly higher). Does NOT filter out other cuisines — user can add any dish. Engine matches any overlap: if household is [up_bihari, hyderabadi], a dish with cuisine [up_bihari, punjabi] still matches. Editable in Settings → Household.",
+
+  "cuisine_vocabulary": [
+    "punjabi",
+    "up_bihari",
+    "rajasthani",
+    "gujarati",
+    "maharashtrian",
+    "bengali",
+    "odia",
+    "tamil",
+    "karnataka",
+    "kerala",
+    "andhra",
+    "hyderabadi",
+    "coastal",
+    "indo_chinese",
+    "continental",
+    "pan_indian"
+  ],
+
+  "notes": "Shared carbs and sabzi. Protein recommended separately per diet_type. Eggitarian persons get egg-based proteins alongside veg proteins. Each component independently swappable. Guests handled by temporarily adding personas — no special guest mode."
+}

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment variables — never commit these
+.env
+.env.local
+.env.*.local
+
+# Claude Code — contains API keys (Linear, etc.)
+.claude/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Personal files
+rishavdiet.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/

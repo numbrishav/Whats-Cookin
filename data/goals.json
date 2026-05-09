@@ -1,0 +1,20 @@
+{
+  "scope": "per_person",
+  "applies_to": "person_1",
+  "daily": {
+    "calories": {
+      "min": 1800,
+      "max": 2100,
+      "unit": "kcal"
+    },
+    "protein": {
+      "min": 100,
+      "unit": "g"
+    }
+  },
+  "principles": [
+    "Reduce carb stacking across meals",
+    "Maintain simple, repeatable eating system",
+    "Protein-first approach, especially at dinner"
+  ]
+}

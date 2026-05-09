@@ -1,0 +1,236 @@
+{
+  "version": 7,
+  "_slots": ["lunch", "evening_snack", "dinner", "dessert"],
+  "_note": "person_1 = husband (nonveg, primary). person_2 = wife (eggitarian). Salad (kheera_pyaaz_salad) always present at lunch and dinner — not listed per slot, implied.",
+  "_food_class_slot_map": {
+    "grain":   "grain_staple food_class",
+    "liquid":  "liquid food_class — dal, kadhi, chole, rajma, salan",
+    "curry":   "curry food_class — thick gravy dishes",
+    "dry":     "dry_semi_dry food_class — sabzis, pan-fried proteins, stir-fries",
+    "side":    "side_condiment food_class — curd, raita",
+    "greens":  "greens food_class — saag, salad",
+    "protein": "shorthand for a protein-primary dish; food_class is either curry or dry_semi_dry depending on the dish"
+  },
+  "_rule_flag": "Tuesday dinner has fish + dal — this conflicts with no_dal_with_nonveg rule. User explicitly set this. Flagged for review.",
+
+  "slots": [
+    {
+      "day": "monday",
+      "meals": {
+        "lunch": {
+          "person_1": {
+            "protein": "pan_fried_chicken", "quantity": "200g",
+            "grain": "roti", "grain_qty": 2,
+            "side": "garlic_curd",
+            "note": "no sabzi on husband's lunch plate — as specified"
+          },
+          "person_2": {
+            "grain": "roti", "grain_qty": 2,
+            "dry": "patta_gobhi",
+            "side": "curd"
+          }
+        },
+        "evening_snack": {
+          "shared": { "fixed": ["whey", "sattu"], "kcal": 220 }
+        },
+        "dinner": {
+          "shared": {
+            "dry": "flexible_from_bank",
+            "dry_note": "pick any one from rotation bank — engine suggests",
+            "liquid": "dal",
+            "grain": "roti", "grain_qty": 5,
+            "grain_note": "5 roti total — ~2–3 each",
+            "side": "curd"
+          }
+        },
+        "dessert": {
+          "shared": { "fixed": ["overnight_oats", "ice_cream"] }
+        }
+      }
+    },
+    {
+      "day": "tuesday",
+      "meals": {
+        "lunch": {
+          "shared": {
+            "liquid": "chole",
+            "grain": "rice",
+            "rule_trigger": "chole_rajma_no_dal",
+            "note": "no side or dry specified — salad only"
+          }
+        },
+        "evening_snack": {
+          "shared": { "fixed": ["whey", "sattu"], "kcal": 220 }
+        },
+        "dinner": {
+          "person_1": {
+            "protein": "fish", "quantity": "250g",
+            "grain": "roti", "grain_qty": 3,
+            "liquid": "dal",
+            "_rule_flag": "fish + dal conflicts with no_dal_with_nonveg rule — user explicitly set this, rule overridden for this slot"
+          },
+          "person_2": {
+            "protein": "beans_broccoli_paneer",
+            "grain": "roti", "grain_qty": 2,
+            "liquid": "dal",
+            "side": "curd"
+          }
+        },
+        "dessert": null
+      }
+    },
+    {
+      "day": "wednesday",
+      "meals": {
+        "lunch": {
+          "person_1": {
+            "protein": "egg_curry", "quantity": "1 whole + 3 whites",
+            "grain": "rice",
+            "side": "curd"
+          },
+          "person_2": {
+            "dry": "patta_gobhi",
+            "grain": "roti", "grain_qty": 2,
+            "liquid": "dal",
+            "side": "curd"
+          }
+        },
+        "evening_snack": {
+          "shared": { "fixed": ["whey", "sattu"], "kcal": 220 }
+        },
+        "dinner": {
+          "person_1": {
+            "protein": "paneer_bhurji", "quantity": "150g",
+            "grain": "roti", "grain_qty": 3,
+            "liquid": "dal"
+          },
+          "person_2": {
+            "protein": "paneer_bhurji", "quantity": "150g",
+            "grain": "roti", "grain_qty": 2,
+            "liquid": "dal"
+          }
+        },
+        "dessert": null
+      }
+    },
+    {
+      "day": "thursday",
+      "meals": {
+        "lunch": {
+          "shared": {
+            "liquid": "rajma",
+            "grain": "rice",
+            "side": "sweet_curd",
+            "rule_trigger": "chole_rajma_no_dal",
+            "note": "sweet curd as side — mishti doi / sweetened dahi"
+          }
+        },
+        "evening_snack": {
+          "shared": { "fixed": ["whey", "sattu"], "kcal": 220 }
+        },
+        "dinner": {
+          "person_1": {
+            "protein": "chinese_chicken",
+            "grain": "butter_garlic_rice",
+            "note": "no dal, no dry specified — as per user"
+          },
+          "person_2": {
+            "protein": "soy_bean_sabzi",
+            "grain": "roti", "grain_qty": 2,
+            "side": "curd"
+          }
+        },
+        "dessert": null
+      }
+    },
+    {
+      "day": "friday",
+      "meals": {
+        "lunch": {
+          "person_1": {
+            "protein": "chicken_curry",
+            "grain": "rice",
+            "side": "curd"
+          },
+          "person_2": {
+            "dry": "bhindi",
+            "dry_prep": "bhindi bhujia (dry fry)",
+            "grain": "roti", "grain_qty": 2,
+            "liquid": "dal",
+            "side": "curd",
+            "note": "no separate protein — dal is the protein source"
+          }
+        },
+        "evening_snack": {
+          "person_1": { "dish": "chicken_tikka_snack", "accompaniment": "toast" },
+          "person_2": { "dish": "mushroom_cheese_omelette", "accompaniment": "toast" }
+        },
+        "dinner": {
+          "shared": {
+            "liquid": "kadhi",
+            "grain": "rice",
+            "note": "kadhi is curd-based — no separate side needed. Salad on side."
+          }
+        },
+        "dessert": {
+          "shared": { "fixed": ["overnight_oats", "ice_cream"] }
+        }
+      }
+    },
+    {
+      "day": "saturday",
+      "meals": {
+        "lunch": {
+          "person_1": {
+            "protein": "chicken_curry",
+            "grain": "rice",
+            "side": "curd"
+          },
+          "person_2": {
+            "protein": "capsicum_paneer_sabzi",
+            "grain": "roti", "grain_qty": 1,
+            "liquid": "dal",
+            "note": "capsicum paneer sabzi acts as both protein and dry slot"
+          }
+        },
+        "evening_snack": {
+          "person_1": { "dish": "masala_omelette", "accompaniment": "toast" },
+          "person_2": { "dish": "masala_omelette", "accompaniment": "toast" }
+        },
+        "dinner": {
+          "shared": {
+            "protein": "paneer_bhurji", "quantity": "120–150g",
+            "grain": "roti", "grain_qty": 1,
+            "dry": "bhindi",
+            "side": "curd"
+          }
+        },
+        "dessert": null
+      }
+    },
+    {
+      "day": "sunday",
+      "meals": {
+        "lunch": {
+          "shared": { "flexible": true, "note": "no cook — eat out or flexible" }
+        },
+        "evening_snack": {
+          "shared": { "dish": "soy_omelette" }
+        },
+        "dinner": {
+          "shared": {
+            "liquid": "kadhi",
+            "protein_boost": "paneer",
+            "grain": "rice",
+            "dry": "carrot_beans_capsicum",
+            "side": "curd",
+            "meal_label": "Kadhi Chawal + Paneer"
+          }
+        },
+        "dessert": {
+          "shared": { "flexible": true }
+        }
+      }
+    }
+  ]
+}

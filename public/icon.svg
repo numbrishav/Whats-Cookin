@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background: saffron rounded rect -->
+  <rect width="512" height="512" rx="112" fill="#E8622A"/>
+  <!-- Outer flame (white) -->
+  <path d="M256 112C256 112 168 194 168 268C168 314 208 352 256 352C304 352 344 314 344 268C344 194 256 112 256 112Z" fill="white"/>
+  <!-- Inner flame eye (orange — creates depth and life) -->
+  <path d="M256 288C247 288 240 281 240 272C240 258 248 240 256 228C264 240 272 258 272 272C272 281 265 288 256 288Z" fill="#E8622A"/>
+</svg>

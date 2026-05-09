@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent:         #E8622A;
+  --accent-light:   #FF8040;
+  --accent-subtle:  #FFF3ED;
+  --accent-dark:    #C44E1C;
+  --surface:        #FFFCF8;
+  --surface-card:   #FFFFFF;
+  --surface-muted:  #F5EEE6;
+  --text-primary:   #1C1410;
+  --text-secondary: #6B5E57;
+  --text-tertiary:  #AFA49E;
+  --border:         rgba(28,20,16,0.09);
+  --border-strong:  rgba(28,20,16,0.16);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+      system-ui, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
+}
