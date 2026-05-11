@@ -19,7 +19,7 @@ The app should feel like a smart friend who already knows your household and jus
 |---|---|---|
 | **Daily use** — see and confirm today's menu | Every day | < 30 seconds |
 | **Swap/edit** — replace one dish you don't want | Occasional | < 1 minute |
-| **Setup/management** — rotation bank, diet chart, household | Rarely | 5–10 min, once |
+| **Setup/management** — Dish Library, diet chart, household | Rarely | 5–10 min, once |
 
 Design priority follows this order. Daily use must be the most beautiful screen. Setup/management can be dense — users are in "configure mode" mindset there.
 
@@ -27,12 +27,12 @@ Design priority follows this order. Daily use must be the most beautiful screen.
 
 ## Flow 1 — Onboarding (First Launch)
 
-**Goal:** Get user from zero to their first suggestion in under 2 minutes.
+**Goal:** Get user from zero to their first set of daily suggestions in under 2 minutes.
 
-### Step 1 — Signup
-- Email entry → magic link sent → user clicks link → logged in
-- No password, no username, no profile photo. One field.
-- Copy: "We'll send you a magic link. No password ever."
+### Step 1 — Local-first setup
+- No account gate on first launch
+- User starts by setting up household context directly
+- Save/backup can be revisited later if and when auth returns to scope
 
 ### Step 2 — Household Setup (one-time, ~60 seconds)
 This is the only "form" in the app. Keep it conversational — one question per screen, big tap targets.
@@ -43,8 +43,7 @@ Subtext: "You can always change this later."
 
 **Screen B — Tell us about each person** (repeat per person)
 - Name or label (Me / Partner / Flatmate / etc.)
-- Diet: Veg 🌿 or Non-veg 🍗 (two large cards, tap to select)
-- Gender (optional): Male / Female / Skip — used only for rough portion calibration, not displayed anywhere else
+- Diet: Veg 🌿 / Eggitarian 🥚 / Non-veg 🍗
 - Who tracks nutrition? Toggle: "I want to track calories/protein" (only for primary user)
 
 **Screen C — Quick Goals** (only shown to the person who said yes to nutrition tracking)
@@ -59,7 +58,7 @@ Two options:
 - "Skip for now, I'll set it up later" → app uses a balanced default template and tells the user
 
 **Done screen:**
-"All set. Here's what's cooking tonight →" — immediately drops user into Day 1 home screen with a suggestion ready.
+"All set. Here's what we're cooking today →" — immediately drops user into the home screen with suggestions ready.
 
 ---
 
@@ -73,23 +72,28 @@ Two options:
   What's Cookin today?           ← app name/header, minimal
   Sunday, 4 May                  ← date
 ─────────────────────────────────
-  DINNER TONIGHT                 ← slot label
+  TODAY'S MEALS                  ← active meal slots for the day
+
+  LUNCH
+  🍚 Rice                 [swap]
+  🍛 Rajma                [swap]
+  🥣 Curd                 [swap]
+
+  DINNER
 
   [ Person 1 — Non-veg ]
   🍗 Chicken Curry        [swap]
-  🫓 2 Roti               [swap]
 
-  [ Person 2 — Veg ]
+  [ Person 2 — Eggitarian ]
   🧀 Paneer Bhurji        [swap]
 
   [ Shared ]
+  🫓 Roti                 [swap]
   🥬 Palak                [swap]
   🥛 Curd                 [swap]
 
 ─────────────────────────────────
   [ 🔀 Shuffle whole meal ]   [ ✓ Looks good ]
-─────────────────────────────────
-  LUNCH TODAY (collapsed)     ▾
 ─────────────────────────────────
 ```
 
@@ -98,7 +102,7 @@ Two options:
 - Person labels are subtle (small chip above each section) — not clinical, just clear
 - "Shuffle whole meal" regenerates the full suggestion (keeps recency penalty in play)
 - "Looks good" = approve and log the meal. This is the primary CTA.
-- Lunch slot is collapsed by default if dinner is the primary use case — one tap to expand
+- Active meal slots are visible without relying on a dinner-first assumption
 
 ### Meal History Chip (bottom of screen)
 Small pill below the cards: "Last 3 days: Paneer · Chicken · Fish" — gives context on why today's suggestion is what it is. Reassures the user the engine is thinking.
@@ -134,20 +138,20 @@ User taps "Add something else" → inline text input appears
   Dish name: [ Methi              ]
   Category:  [ Leafy Sabzi   ▾   ]  ← pre-filled from context
   Type:      [ Veg ✓ ] [ Non-veg ]
-  [ Save to rotation bank ]  ← checkbox, checked by default
+  [ Save to Dish Library ]   ← checkbox, checked by default
   [ Add to diet chart too ]  ← secondary checkbox, unchecked by default
   [ Use for today ]
 ```
 
-- "Save to rotation bank" is checked by default → grows the bank organically through daily use, no separate management needed
+- "Save to Dish Library" is checked by default → grows the library organically through daily use, no separate management needed
 - "Add to diet chart too" is secondary — only if user wants this to become a recurring constraint
 - Tapping "Use for today" swaps the dish and returns to home screen
 
 ---
 
-## Flow 4 — Rotation Bank Management
+## Flow 4 — Dish Library Management
 
-**Access:** Settings → Rotation Bank, or from any swap sheet via "Manage bank"
+**Access:** Settings → Dish Library, or from any swap sheet via "Manage library"
 
 **This screen is for occasional use — power user territory. Dense is okay here.**
 
@@ -249,7 +253,7 @@ User opens the app and sees a suggestion immediately. No loading state, no "plea
 Navigation depth kills mobile apps. Every swap interaction stays on the home screen via a sheet. No back buttons in the middle of a task.
 
 ### 3. Manual add lives inside the swap flow
-The rotation bank grows organically as users swap. There is no separate "onboarding your food library" step. You see a suggestion, you want something else, you type it, it gets saved. That's the moment.
+The Dish Library grows organically as users swap. There is no separate "onboarding your food library" step. You see a suggestion, you want something else, you type it, it gets saved. That's the moment.
 
 ### 4. One primary CTA per screen
 Home screen: "Looks good ✓" is the only big button.
@@ -287,8 +291,7 @@ In swap sheets, reserve items appear — they're just below active items. Users 
 | Home — today's menu | Core | P0 |
 | Swap bottom sheet | Overlay | P0 |
 | Onboarding — household setup | Flow | P0 |
-| Onboarding — magic link | Flow | P0 |
-| Rotation bank management | Settings | P1 |
+| Dish Library management | Settings | P1 |
 | Diet chart management | Settings | P1 |
 | Settings — household, goals, rules | Settings | P1 |
 | Meal history / log | Secondary | P2 |
@@ -299,7 +302,7 @@ In swap sheets, reserve items appear — they're just below active items. Users 
 
 ## Open Questions (to resolve before build)
 
-1. **Lunch vs Dinner:** Do we build both slots from day 1, or ship dinner-only and add lunch in v1.1? Recommendation: dinner-only first. Prove the loop.
+1. **Meal coverage:** Full meal coverage is in scope. Remaining question is how the home screen should prioritize and present active slots without feeling crowded.
 2. **Approval logging:** When user taps "Looks good", do we log it immediately to Supabase or queue it in IndexedDB and sync? Answer: IndexedDB first, sync opportunistically.
 3. **Notification timing:** For households with a cook, morning notification is key. But push notifications on PWA are patchy on iOS. Phase 2 decision — use share sheet as workaround for now.
 4. **Reserve dishes in auto-rotation:** Should reserve dishes ever surface in the daily suggestion automatically, or only via manual swap? Current thinking: only via swap. Reserve = "I like this but don't want it often."

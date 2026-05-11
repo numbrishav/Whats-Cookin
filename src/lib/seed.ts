@@ -4,7 +4,7 @@ import dietChartData from '../../data/diet-chart.json'
 import type { Dish, MealSlotConfig, Household, Goals, DietChartDayPlan } from '@/types'
 
 export const MEAL_SLOTS: MealSlotConfig[] = [
-  { id: 'breakfast',     label: 'Breakfast',       active: false, order: 0 },
+  { id: 'breakfast',     label: 'Breakfast',       active: true,  order: 0 },
   { id: 'lunch',         label: 'Lunch',           active: true,  order: 1 },
   { id: 'evening_snack', label: 'Evening Snack',   active: true,  order: 2 },
   { id: 'dinner',        label: 'Dinner',          active: true,  order: 3 },

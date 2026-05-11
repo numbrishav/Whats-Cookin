@@ -1,3 +1,8 @@
+// ─── Food Class ───────────────────────────────────────────────────────────────
+// Canonical mapping (food_class → display name) lives in src/lib/food-classes.ts.
+import type { FoodClass as _FoodClass } from '@/lib/food-classes'
+export type FoodClass = _FoodClass
+
 // ─── Diet & Person ────────────────────────────────────────────────────────────
 
 export type DietType = 'veg' | 'eggitarian' | 'nonveg'
@@ -85,7 +90,8 @@ export interface DishIngredient {
 export interface Dish {
   id: string
   name: string
-  category: DishCategory
+  food_class?: FoodClass    // new canonical classification — see src/lib/food-classes.ts
+  category: DishCategory   // legacy field from seed files — still used by engine internals
   type: DietType
   status: DishStatus
   tags: string[]
@@ -94,7 +100,8 @@ export interface Dish {
   carbs_g?: number | null
   fat_g?: number | null
   last_used?: string | null   // ISO date
-  pairs_with?: string
+  pairs_with?: string[]
+  fills_slots?: string[]
   frequency_rule?: string
   available_to?: DietType[]
   seeded_from?: RegionId      // provenance — set at onboarding, never affects engine
@@ -189,6 +196,57 @@ export interface Goals {
   daily_calories_max: number
   protein_min_g: number
   goal_archetype?: GoalArchetype
+}
+
+// ─── Weekly Menu Rule Packs ──────────────────────────────────────────────────
+
+export type BreakfastShape =
+  | 'quick'
+  | 'protein_breakfast'
+  | 'traditional_breakfast'
+  | 'light_breakfast'
+
+export type LunchShape =
+  | 'staple_main_veg'
+  | 'rice_liquid_veg'
+  | 'staple_protein_veg'
+
+export type DinnerShape =
+  | 'staple_protein_light_veg'
+  | 'staple_main_veg'
+  | 'light_one_pot'
+
+export type SplitProteinStrategy = 'only_if_needed' | 'prefer_shared'
+
+export type AvoidCombinationKey =
+  | 'one_carb_only'
+  | 'no_dal_with_chole_rajma'
+  | 'no_dal_with_fish'
+  | 'avoid_repeat_main_close'
+
+export interface DietChartRulePrefs {
+  how_often: {
+    chicken_per_week: number
+    fish_per_week: number
+    eggs_per_week: number
+    paneer_per_week: number
+    one_pot_per_week: number
+  }
+  meal_shape: {
+    breakfast_shape: BreakfastShape
+    lunch_shape: LunchShape
+    dinner_shape: DinnerShape
+    split_protein_strategy: SplitProteinStrategy
+  }
+  avoid_combinations: Record<AvoidCombinationKey, boolean>
+}
+
+export interface DietChartRuleDefaultsMeta {
+  base_default: 'indian_default'
+  primary_region: RegionId
+  goal_archetype: GoalArchetype
+  derived_for_diets: DietType[]
+  derived_at: string
 }
 
 // ─── Rules ────────────────────────────────────────────────────────────────────

@@ -24,36 +24,49 @@
     ]
   },
   "food_classes": {
+    "one_pot": {
+      "display": "One-Pot Meals",
+      "swap_examples": "Khichdi ↔ Pongal ↔ Dal Dhokli",
+      "description": "Complete meal in one vessel — fills 2+ slots simultaneously. Swaps only with other one_pot dishes covering the same slots via fills_slots superset rule."
+    },
     "grain_staple": {
-      "meal_slot": "grain",
-      "description": "Dry starchy base — roti, rice, paratha, flatbreads, one-pot grains, South Indian tiffin"
+      "display": "Staples",
+      "swap_examples": "Roti ↔ Rice ↔ Paratha",
+      "description": "Dry starchy base — roti, rice, paratha, flatbreads, South Indian tiffin"
     },
     "liquid": {
-      "meal_slot": "liquid",
+      "display": "Main Gravies & Lentils",
+      "swap_examples": "Dal ↔ Rajma ↔ Sambhar",
       "description": "Thin to medium consistency, spoonable — dal varieties, sambhar, kadhi, rajma, chole, rasam, salan, amti"
     },
     "curry": {
-      "meal_slot": "curry",
-      "description": "Thick gravy — chicken curry, fish curry, paneer masala, egg curry, regional thick gravies"
+      "display": "Main Gravies & Lentils",
+      "swap_examples": "Chicken Curry ↔ Butter Chicken",
+      "description": "Thick gravy — chicken curry, fish curry, paneer masala, egg curry. Same display as liquid; separate swap pool."
     },
     "dry_semi_dry": {
-      "meal_slot": "dry",
+      "display": "Curries & Sabzis",
+      "swap_examples": "Bhindi ↔ Aloo Jeera ↔ Poriyal",
       "description": "No gravy or minimal — pan-fried proteins, bhujia, stir-fry sabzis, poriyal, thoran, kootu"
     },
     "greens": {
-      "meal_slot": "greens",
+      "display": "Leafy Veggies and Salad",
+      "swap_examples": "Palak ↔ Lal Saag",
       "description": "Leafy, raw, or lightly cooked — saag, salad, sprouts, kachumber, sarson"
     },
     "side_condiment": {
-      "meal_slot": "side",
+      "display": "Condiments",
+      "swap_examples": "Curd ↔ Raita ↔ Pickle",
       "description": "Accompaniment, never a main slot — curd, raita, chutney, pickle, chaas"
     },
     "snack_finger_food": {
-      "meal_slot": "snack",
+      "display": "Evening Snacks",
+      "swap_examples": "Tikka ↔ Omelette",
       "description": "Standalone, no grain needed — tikka, omelette, vada, chilla, dhokla, pesarattu"
     },
     "dessert": {
-      "meal_slot": "dessert",
+      "display": "Dessert",
+      "swap_examples": "Ice Cream ↔ Dark Chocolate",
       "description": "Sweet, end-of-meal"
     }
   },
@@ -373,7 +386,7 @@
     {
       "id": "curd_rice",
       "name": "Curd Rice (Thayir Sadam)",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "side"
@@ -431,7 +444,7 @@
     {
       "id": "khichdi",
       "name": "Khichdi",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "liquid"
@@ -461,7 +474,7 @@
     {
       "id": "pongal",
       "name": "Pongal (Ven Pongal)",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "liquid"
@@ -496,7 +509,7 @@
     {
       "id": "bisi_bele_bath",
       "name": "Bisi Bele Bath",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "liquid",
@@ -733,7 +746,7 @@
     {
       "id": "biryani",
       "name": "Chicken Biryani",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "protein"
@@ -780,7 +793,7 @@
     {
       "id": "dal_dhokli",
       "name": "Dal Dhokli",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "liquid"
@@ -838,7 +851,7 @@
     {
       "id": "dal_baati",
       "name": "Dal Baati Churma",
-      "food_class": "grain_staple",
+      "food_class": "one_pot",
       "fills_slots": [
         "grain",
         "liquid"

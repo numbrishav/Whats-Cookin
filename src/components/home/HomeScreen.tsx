@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router-dom'
-import { db, approveMeal, getRecentlyUsed, getWeeklyUsage } from '@/db/schema'
+import { db, approveMeal, getRecentlyUsed, getWeeklyUsage, upsertMealPlan } from '@/db/schema'
 import { generateMealSet, getSwapOptions } from '@/engine/recommendation'
 import { MealCard } from './MealCard'
 import { SwapSheet } from './SwapSheet'
@@ -24,6 +24,7 @@ import {
   dayOfMonth,
 } from '@/lib/dates'
 import { MEAL_SLOTS, DEFAULT_HOUSEHOLD, DEFAULT_DIET_CHART } from '@/lib/seed'
+import { PLANNED_MENU_SLOTS, ensureDietChartRulesAndPlans } from '@/lib/weekly-menu'
 import type {
   MealCandidateSet,
   MealOutput,
@@ -164,6 +165,12 @@ function HistoryDayView({
     [],
   ) ?? []
 
+  const plannedMeals = useLiveQuery(
+    () => db.meal_plans.where('date').equals(selectedIso).toArray(),
+    [selectedIso],
+    [],
+  ) ?? []
+
   // For future dates: generate a suggestion
   const [futureMeals, setFutureMeals] = useState<Partial<Record<MealSlotId, MealOutput>>>({})
 
@@ -235,6 +242,38 @@ function HistoryDayView({
   }
 
   // Future date
+  if (plannedMeals.length > 0) {
+    return (
+      <div className="px-5 space-y-4">
+        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)' }}>
+          Planned for this day.
+        </p>
+        {ACTIVE_SLOTS.map(slot => {
+          const plan = plannedMeals.find(meal => meal.slot === slot.id)
+          return (
+            <section key={slot.id}>
+              <div className="flex items-center justify-between mb-2">
+                {slotLabel(slot)}
+                {plan && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', background: 'var(--surface-muted)', borderRadius: 999, padding: '2px 8px' }}>
+                    Planned
+                  </span>
+                )}
+              </div>
+              {plan ? (
+                <MealCard meal={plan.meal} onSwap={() => {}} readOnly />
+              ) : (
+                <div className="rounded-2xl px-5 py-4" style={{ background: 'var(--surface-muted)' }}>
+                  <p style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>No meal planned</p>
+                </div>
+              )}
+            </section>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div className="px-5 space-y-4">
       <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)' }}>
@@ -299,6 +338,12 @@ export function HomeScreen() {
     [today],
   ) ?? []
 
+  const todayPlannedMeals = useLiveQuery(
+    () => db.meal_plans.where('date').equals(today).toArray(),
+    [today],
+    [],
+  ) ?? []
+
   const [mealSets, setMealSets] = useState<Partial<Record<MealSlotId, MealCandidateSet>>>({})
   const [approvedSlots, setApprovedSlots] = useState<Set<MealSlotId>>(new Set())
   const [swapTarget, setSwapTarget] = useState<{ component: MealComponent; slot: MealSlotId } | null>(null)
@@ -307,6 +352,10 @@ export function HomeScreen() {
   const [householdSheetOpen, setHouseholdSheetOpen] = useState(false)
   const [quickAddSlot, setQuickAddSlot] = useState<MealSlotId | null>(null)
   const [libraryPickSlot, setLibraryPickSlot] = useState<MealSlotId | null>(null)
+
+  useEffect(() => {
+    ensureDietChartRulesAndPlans()
+  }, [])
 
   // Build recommendation context once dishes load
   useEffect(() => {
@@ -332,7 +381,13 @@ export function HomeScreen() {
     if (!ctx || allDishes.length === 0) return
     const initial: Partial<Record<MealSlotId, MealCandidateSet>> = {}
     for (const slot of ACTIVE_SLOTS) {
-      initial[slot.id] = {
+      const planned = todayPlannedMeals.find(meal => meal.slot === slot.id)
+      initial[slot.id] = planned ? {
+        slot: slot.id,
+        date: today,
+        candidates: [planned.meal],
+        currentIndex: 0,
+      } : {
         slot: slot.id,
         date: today,
         candidates: generateMealSet(allDishes, slot.id, { ...ctx, slot: slot.id }),
@@ -340,10 +395,21 @@ export function HomeScreen() {
       }
     }
     setMealSets(initial)
-  }, [ctx, allDishes, today])
+  }, [ctx, allDishes, today, todayPlannedMeals])
 
   const handleShuffle = useCallback((slot: MealSlotId) => {
     if (!ctx || allDishes.length === 0) return
+    if (PLANNED_MENU_SLOTS.includes(slot as typeof PLANNED_MENU_SLOTS[number])) {
+      const nextCandidates = generateMealSet(allDishes, slot, { ...ctx, slot })
+      const nextMeal = nextCandidates[1] ?? nextCandidates[0]
+      if (!nextMeal) return
+      setMealSets(prev => ({
+        ...prev,
+        [slot]: { slot, date: today, candidates: [nextMeal], currentIndex: 0 },
+      }))
+      void upsertMealPlan(nextMeal)
+      return
+    }
     setLastAutoSwap(prev => prev?.slot === slot ? null : prev)
     setMealSets(prev => {
       const current = prev[slot]
@@ -366,6 +432,7 @@ export function HomeScreen() {
   }, [mealSets, isAnonymous, savePromptShown])
 
   const applySwap = useCallback((slot: MealSlotId, targetDishId: string, replacement: Dish) => {
+    let updatedMeal: MealOutput | null = null
     setMealSets(prev => {
       const mealSet = prev[slot]
       if (!mealSet) return prev
@@ -374,10 +441,14 @@ export function HomeScreen() {
         const nextComponents = candidate.components.map(c =>
           c.dish.id === targetDishId ? { ...c, dish: replacement } : c,
         )
-        return { ...candidate, components: nextComponents, macros: computeMealMacros(nextComponents) }
+        updatedMeal = { ...candidate, components: nextComponents, macros: computeMealMacros(nextComponents) }
+        return updatedMeal
       })
       return { ...prev, [slot]: { ...mealSet, candidates: nextCandidates } }
     })
+    if (updatedMeal && PLANNED_MENU_SLOTS.includes(slot as typeof PLANNED_MENU_SLOTS[number])) {
+      void upsertMealPlan(updatedMeal)
+    }
   }, [])
 
   const handleSwap = useCallback((component: MealComponent, slot: MealSlotId) => {
@@ -421,6 +492,7 @@ export function HomeScreen() {
       : newDish.type === 'eggitarian' ? 'eggitarian'
       : 'shared'
 
+    let updatedMeal: MealOutput | null = null
     setMealSets(prev => {
       const mealSet = prev[slot]
       if (!mealSet) return prev
@@ -442,6 +514,7 @@ export function HomeScreen() {
         components: updatedComponents,
         macros: computeMealMacros(updatedComponents),
       }
+      updatedMeal = updatedCandidate
 
       const updatedCandidates = mealSet.candidates.map((c, i) =>
         i === idx ? updatedCandidate : c,
@@ -452,6 +525,9 @@ export function HomeScreen() {
         [slot]: { ...mealSet, candidates: updatedCandidates },
       }
     })
+    if (updatedMeal && PLANNED_MENU_SLOTS.includes(slot as typeof PLANNED_MENU_SLOTS[number])) {
+      void upsertMealPlan(updatedMeal)
+    }
   }, [])
 
   const currentSwapMealSet = swapTarget ? mealSets[swapTarget.slot] : undefined

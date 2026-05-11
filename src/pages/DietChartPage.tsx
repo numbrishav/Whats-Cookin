@@ -1,353 +1,253 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '@/db/schema'
-import { BottomSheet } from '@/components/ui/BottomSheet'
-import { todayDayOfWeek } from '@/lib/dates'
-import type { DayOfWeek } from '@/types'
+import { db, upsertMealPlan } from '@/db/schema'
+import { MealCard } from '@/components/home/MealCard'
+import { LibraryPickSheet } from '@/components/home/LibraryPickSheet'
+import { QuickAddSheet } from '@/components/shared/QuickAddSheet'
+import { currentWeekDates, todayISO } from '@/lib/dates'
+import { DEFAULT_HOUSEHOLD } from '@/lib/seed'
+import {
+  PLANNED_MENU_SLOTS,
+  ensureDietChartRulesAndPlans,
+  regenerateSinglePlannedSlot,
+} from '@/lib/weekly-menu'
+import type { Dish, Household, MealOutput, PersonScope } from '@/types'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type ProteinPref = 'veg' | 'nonveg' | 'either' | 'none'
-type CarbPref    = 'roti' | 'rice' | 'either' | 'none'
-type SabziPref   = 'green' | 'any' | 'none'
-type SlotId      = 'lunch' | 'dinner'
-
-interface SlotConstraint {
-  protein:     ProteinPref
-  carb:        CarbPref
-  carb_qty:    number
-  sabzi:       SabziPref
-  notes:       string
-  is_flexible: boolean
+const SLOT_LABEL: Record<'breakfast' | 'lunch' | 'dinner', string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
 }
-
-type DietConstraints = Partial<Record<DayOfWeek, Partial<Record<SlotId, SlotConstraint>>>>
-
-const DEFAULT_CONSTRAINT: SlotConstraint = {
-  protein:     'either',
-  carb:        'either',
-  carb_qty:    2,
-  sabzi:       'any',
-  notes:       '',
-  is_flexible: true,
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const DAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-const DAY_LABEL: Record<DayOfWeek, string> = {
-  monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu',
-  friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
-}
-const SLOTS: SlotId[] = ['lunch', 'dinner']
-const SLOT_LABEL: Record<SlotId, string> = { lunch: 'Lunch', dinner: 'Dinner' }
 
 const font = '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+function dishScopeForHousehold(dish: Dish, household: Household): PersonScope {
+  const eligible = dish.eligible_for && dish.eligible_for.length > 0
+    ? dish.eligible_for
+    : dish.available_to && dish.available_to.length > 0
+      ? dish.available_to
+      : dish.type === 'nonveg'
+        ? ['nonveg']
+        : dish.type === 'eggitarian'
+          ? ['eggitarian', 'nonveg']
+          : ['veg', 'eggitarian', 'nonveg']
 
-function constraintSummary(c: SlotConstraint): string {
-  if (c.is_flexible) return 'Flexible — engine picks freely'
-  const parts: string[] = []
-  if (c.protein === 'veg') parts.push('Veg protein')
-  else if (c.protein === 'nonveg') parts.push('NV protein')
-  else if (c.protein === 'either') parts.push('Any protein')
-
-  if (c.carb === 'roti') parts.push(`Roti ×${c.carb_qty}`)
-  else if (c.carb === 'rice') parts.push(`Rice ×${c.carb_qty}`)
-  else if (c.carb === 'either') parts.push('Roti or Rice')
-
-  if (c.sabzi === 'green') parts.push('Green sabzi')
-  else if (c.sabzi === 'any') parts.push('Any sabzi')
-
-  return parts.length > 0 ? parts.join(' · ') : 'No constraints set'
+  if (household.members.every(member => eligible.includes(member.diet_type))) return 'shared'
+  if (eligible.includes('nonveg') && !eligible.includes('veg') && !eligible.includes('eggitarian')) return 'nonveg'
+  if (eligible.includes('eggitarian') && !eligible.includes('veg')) return 'eggitarian'
+  if (eligible.includes('veg') && !eligible.includes('nonveg') && !eligible.includes('eggitarian')) return 'veg'
+  return 'shared'
 }
 
-// ─── Toggle Chips ─────────────────────────────────────────────────────────────
-
-function ToggleChips<T extends string>({ label, value, options, onChange }: {
-  label: string
-  value: T
-  options: { value: T; label: string }[]
-  onChange: (v: T) => void
-}) {
+function EmptyState({ onRegenerate }: { onRegenerate: () => void }) {
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: '#6B5E57' }}>
-        {label}
-      </p>
-      <div className="flex gap-2 flex-wrap">
-        {options.map(opt => (
-          <button
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
-            className="px-3.5 py-2 rounded-full text-sm font-medium transition-all active:scale-95"
-            style={{
-              backgroundColor: value === opt.value ? '#1D1D1F' : '#F5EEE6',
-              color: value === opt.value ? '#FFFFFF' : '#3C3C43',
-            }}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+    <div className="rounded-2xl px-4 py-5" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}>
+      <p className="text-sm font-medium" style={{ color: '#6B5E57' }}>No meal planned yet.</p>
+      <button
+        onClick={onRegenerate}
+        className="mt-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
+        style={{ backgroundColor: '#F5EEE6', color: '#1D1D1F' }}
+      >
+        Regenerate this slot
+      </button>
     </div>
   )
 }
 
-// ─── Edit Sheet ───────────────────────────────────────────────────────────────
+export function DietChartPage() {
+  const today = todayISO()
+  const week = useMemo(() => currentWeekDates(today), [today])
+  const [selectedDate, setSelectedDate] = useState(week[0]?.date ?? today)
+  const [isRegeneratingKey, setIsRegeneratingKey] = useState<string | null>(null)
+  const [replaceTarget, setReplaceTarget] = useState<{ date: string; slot: 'breakfast' | 'lunch' | 'dinner'; dishId: string } | null>(null)
+  const [addTarget, setAddTarget] = useState<{ date: string; slot: 'breakfast' | 'lunch' | 'dinner' } | null>(null)
+  const [quickAddTarget, setQuickAddTarget] = useState<{ date: string; slot: 'breakfast' | 'lunch' | 'dinner' } | null>(null)
 
-function SlotEditSheet({ open, onClose, slotId, constraint, onSave }: {
-  open: boolean
-  onClose: () => void
-  slotId: SlotId
-  constraint: SlotConstraint
-  onSave: (c: SlotConstraint) => void
-}) {
-  const [local, setLocal] = useState<SlotConstraint>(constraint)
+  const household = useLiveQuery(
+    () => db.settings.get('household').then(setting => (setting?.value as Household) ?? DEFAULT_HOUSEHOLD),
+    [],
+    DEFAULT_HOUSEHOLD,
+  ) ?? DEFAULT_HOUSEHOLD
+
+  const allDishes = useLiveQuery(() => db.dishes.toArray(), [], []) ?? []
+
+  const weekDates = week.map(day => day.date)
+  const plans = useLiveQuery(
+    () => db.meal_plans.where('date').anyOf(weekDates).toArray(),
+    [weekDates.join('|')],
+    [],
+  ) ?? []
 
   useEffect(() => {
-    if (open) setLocal({ ...constraint })
-  }, [open, constraint])
+    ensureDietChartRulesAndPlans()
+  }, [])
 
-  function set<K extends keyof SlotConstraint>(key: K, value: SlotConstraint[K]) {
-    setLocal(prev => ({ ...prev, [key]: value }))
+  function plannedMealFor(date: string, slot: 'breakfast' | 'lunch' | 'dinner') {
+    return plans.find(plan => plan.date === date && plan.slot === slot)
   }
 
-  function handleClose() {
-    onSave(local)
-    onClose()
+  async function replaceDish(replacement: Dish) {
+    if (!replaceTarget) return
+    const existing = plannedMealFor(replaceTarget.date, replaceTarget.slot)
+    if (!existing) return
+    const components = existing.meal.components.map(component =>
+      component.dish.id === replaceTarget.dishId ? { ...component, dish: replacement } : component,
+    )
+    await upsertMealPlan({
+      ...existing.meal,
+      components,
+    })
+    setReplaceTarget(null)
   }
 
-  const rotiOptions  = [{ value: 1, label: '1' }, { value: 2, label: '2' }, { value: 3, label: '3' }]
-  const riceOptions  = [{ value: 0.5, label: '½' }, { value: 1, label: '1' }, { value: 1.5, label: '1½' }]
-  const qtyOptions   = local.carb === 'roti' ? rotiOptions : riceOptions
-
-  return (
-    <BottomSheet open={open} onClose={handleClose} title={SLOT_LABEL[slotId]}>
-      <div className="space-y-6 pb-4">
-        {/* Flexible toggle */}
-        <div
-          className="flex items-center justify-between px-4 py-3.5 rounded-2xl"
-          style={{ backgroundColor: '#F5EEE6' }}
-        >
-          <div>
-            <p className="text-sm font-semibold" style={{ color: '#1D1D1F' }}>Flexible</p>
-            <p className="text-xs mt-0.5" style={{ color: '#6B5E57' }}>Engine picks freely from your library</p>
-          </div>
-          <button
-            onClick={() => set('is_flexible', !local.is_flexible)}
-            className="w-12 h-7 rounded-full transition-colors duration-200 relative flex-shrink-0"
-            style={{ backgroundColor: local.is_flexible ? '#34C759' : '#E5E5EA' }}
-          >
-            <div
-              className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-all duration-200"
-              style={{ left: local.is_flexible ? '1.25rem' : '0.125rem' }}
-            />
-          </button>
-        </div>
-
-        {!local.is_flexible && (
-          <>
-            <ToggleChips
-              label="Protein"
-              value={local.protein}
-              options={[
-                { value: 'veg',    label: '🌿 Veg' },
-                { value: 'nonveg', label: '🍗 NV' },
-                { value: 'either', label: 'Either' },
-                { value: 'none',   label: 'None' },
-              ]}
-              onChange={v => set('protein', v)}
-            />
-
-            <ToggleChips
-              label="Carb"
-              value={local.carb}
-              options={[
-                { value: 'roti',   label: 'Roti' },
-                { value: 'rice',   label: 'Rice' },
-                { value: 'either', label: 'Either' },
-                { value: 'none',   label: 'None' },
-              ]}
-              onChange={v => set('carb', v)}
-            />
-
-            {(local.carb === 'roti' || local.carb === 'rice') && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: '#6B5E57' }}>
-                  {local.carb === 'roti' ? 'How many rotis?' : 'How much rice?'}
-                </p>
-                <div className="flex gap-2">
-                  {qtyOptions.map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => set('carb_qty', opt.value)}
-                      className="px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95"
-                      style={{
-                        backgroundColor: local.carb_qty === opt.value ? '#1D1D1F' : '#F5EEE6',
-                        color: local.carb_qty === opt.value ? '#FFFFFF' : '#3C3C43',
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <ToggleChips
-              label="Sabzi"
-              value={local.sabzi}
-              options={[
-                { value: 'green', label: 'Green preferred' },
-                { value: 'any',   label: 'Any' },
-                { value: 'none',  label: 'None' },
-              ]}
-              onChange={v => set('sabzi', v)}
-            />
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: '#6B5E57' }}>Notes</p>
-              <input
-                value={local.notes}
-                onChange={e => set('notes', e.target.value)}
-                placeholder="e.g. Protein-first, light dinner"
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                style={{ backgroundColor: '#F5EEE6', color: '#1D1D1F', fontFamily: font }}
-              />
-            </div>
-          </>
-        )}
-      </div>
-    </BottomSheet>
-  )
-}
-
-// ─── Slot Card ────────────────────────────────────────────────────────────────
-
-function SlotCard({ slotId, constraint, onTap }: {
-  slotId: SlotId
-  constraint: SlotConstraint
-  onTap: () => void
-}) {
-  return (
-    <button
-      onClick={onTap}
-      className="w-full text-left rounded-2xl px-4 py-4 transition-all active:scale-[0.98]"
-      style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 8px rgba(0,0,0,0.06)' }}
-    >
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6B5E57' }}>
-          {SLOT_LABEL[slotId]}
-        </span>
-        <span className="text-xs" style={{ color: '#C7C7CC' }}>Edit →</span>
-      </div>
-      <p
-        className="text-sm font-medium"
-        style={{ color: constraint.is_flexible ? '#AFA49E' : '#1D1D1F' }}
-      >
-        {constraintSummary(constraint)}
-      </p>
-      {!constraint.is_flexible && constraint.notes && (
-        <p className="text-xs mt-1" style={{ color: '#AFA49E' }}>{constraint.notes}</p>
-      )}
-    </button>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export function DietChartPage() {
-  const today = todayDayOfWeek()
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(today)
-  const [editTarget, setEditTarget] = useState<{ day: DayOfWeek; slot: SlotId } | null>(null)
-
-  const constraints = useLiveQuery(
-    () => db.settings.get('diet_chart_constraints').then(s => (s?.value as DietConstraints) ?? {}),
-    [],
-    {} as DietConstraints,
-  ) ?? {}
-
-  function getConstraint(day: DayOfWeek, slot: SlotId): SlotConstraint {
-    return constraints[day]?.[slot] ?? { ...DEFAULT_CONSTRAINT }
-  }
-
-  async function saveConstraint(day: DayOfWeek, slot: SlotId, c: SlotConstraint) {
-    const next: DietConstraints = {
-      ...constraints,
-      [day]: { ...constraints[day], [slot]: c },
+  async function addDish(dish: Dish) {
+    const target = addTarget ?? quickAddTarget
+    if (!target) return
+    const existing = plannedMealFor(target.date, target.slot)
+    const nextComponents = [
+      ...(existing?.meal.components ?? []),
+      {
+        dish,
+        swappable: true,
+        person_scope: dishScopeForHousehold(dish, household),
+      },
+    ]
+    const meal: MealOutput = {
+      slot: target.slot,
+      date: target.date,
+      approved: existing?.meal.approved ?? false,
+      components: nextComponents,
+      macros: existing?.meal.macros ?? { calories: null, protein_g: null },
     }
-    await db.settings.put({ key: 'diet_chart_constraints', value: next })
+    await upsertMealPlan(meal)
+    setAddTarget(null)
+    setQuickAddTarget(null)
   }
 
-  const editConstraint = editTarget ? getConstraint(editTarget.day, editTarget.slot) : { ...DEFAULT_CONSTRAINT }
+  async function regenerateSlot(date: string, slot: 'breakfast' | 'lunch' | 'dinner') {
+    const key = `${date}:${slot}`
+    setIsRegeneratingKey(key)
+    try {
+      await regenerateSinglePlannedSlot(date, slot)
+    } finally {
+      setIsRegeneratingKey(null)
+    }
+  }
 
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: '#FFFCF8', fontFamily: font }}>
-      {/* Header */}
       <div className="px-5 pt-14 pb-4">
         <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#6B5E57', letterSpacing: '0.08em' }}>
           What's Cookin
         </p>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#1D1D1F' }}>Diet Chart</h1>
-        <p className="text-sm mt-1" style={{ color: '#6B5E57' }}>Tap any slot to set constraints.</p>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#1D1D1F' }}>Weekly Menu</h1>
+        <p className="text-sm mt-1" style={{ color: '#6B5E57' }}>
+          Generated from your food habits. Tweak dishes here, then regenerate only when you want a fresh week.
+        </p>
       </div>
 
-      {/* Day strip */}
       <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="flex gap-2 px-5 pb-4" style={{ width: 'max-content' }}>
-          {DAYS.map(day => {
-            const isSelected = day === selectedDay
-            const isToday    = day === today
+          {week.map(day => {
+            const isSelected = day.date === selectedDate
+            const label = new Date(day.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' })
+            const dateNum = new Date(day.date + 'T00:00:00').getDate()
             return (
               <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
+                key={day.date}
+                onClick={() => setSelectedDate(day.date)}
                 className="flex flex-col items-center gap-1 px-4 py-2.5 rounded-2xl transition-all active:scale-95"
                 style={{
                   backgroundColor: isSelected ? '#1D1D1F' : '#FFFFFF',
                   boxShadow: isSelected ? 'none' : '0 1px 4px rgba(0,0,0,0.06)',
-                  minWidth: 56,
+                  minWidth: 58,
                 }}
               >
                 <span className="text-xs font-semibold" style={{ color: isSelected ? '#FFFFFF' : '#3C3C43' }}>
-                  {DAY_LABEL[day]}
+                  {label}
                 </span>
-                {isToday && (
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? '#FFFFFF' : '#FF6B00' }} />
-                )}
+                <span className="text-sm" style={{ color: isSelected ? '#FFFFFF' : '#AFA49E' }}>
+                  {dateNum}
+                </span>
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* Slot cards */}
-      <div className="px-5 space-y-3">
-        {SLOTS.map(slot => (
-          <SlotCard
-            key={slot}
-            slotId={slot}
-            constraint={getConstraint(selectedDay, slot)}
-            onTap={() => setEditTarget({ day: selectedDay, slot })}
-          />
-        ))}
+      <div className="px-5 space-y-5">
+        {PLANNED_MENU_SLOTS.map(slot => {
+          const plan = plannedMealFor(selectedDate, slot)
+          const key = `${selectedDate}:${slot}`
+          const isRegenerating = isRegeneratingKey === key
+          return (
+            <section key={slot}>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-[15px] font-semibold" style={{ color: '#1D1D1F' }}>{SLOT_LABEL[slot]}</h2>
+                <button
+                  onClick={() => void regenerateSlot(selectedDate, slot)}
+                  className="text-xs font-semibold transition-opacity active:opacity-70"
+                  style={{ color: '#E8622A' }}
+                >
+                  {isRegenerating ? 'Regenerating…' : 'Regenerate slot'}
+                </button>
+              </div>
+
+              {plan ? (
+                <>
+                  <MealCard
+                    meal={plan.meal}
+                    onSwap={component => setReplaceTarget({ date: selectedDate, slot, dishId: component.dish.id })}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => setAddTarget({ date: selectedDate, slot })}
+                      className="px-3 py-2 rounded-xl text-sm font-medium transition-all active:scale-95"
+                      style={{ backgroundColor: '#F5EEE6', color: '#1D1D1F' }}
+                    >
+                      Add from library
+                    </button>
+                    <button
+                      onClick={() => setQuickAddTarget({ date: selectedDate, slot })}
+                      className="px-3 py-2 rounded-xl text-sm font-medium transition-all active:scale-95"
+                      style={{ backgroundColor: '#F5EEE6', color: '#1D1D1F' }}
+                    >
+                      Quick add new dish
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <EmptyState onRegenerate={() => void regenerateSlot(selectedDate, slot)} />
+              )}
+            </section>
+          )
+        })}
       </div>
 
-      {/* Edit sheet */}
-      {editTarget && (
-        <SlotEditSheet
-          open={!!editTarget}
-          onClose={() => setEditTarget(null)}
-          slotId={editTarget.slot}
-          constraint={editConstraint}
-          onSave={c => {
-            saveConstraint(editTarget.day, editTarget.slot, c)
-            setEditTarget(null)
-          }}
-        />
-      )}
+      <LibraryPickSheet
+        open={replaceTarget !== null || addTarget !== null}
+        onClose={() => {
+          setReplaceTarget(null)
+          setAddTarget(null)
+        }}
+        allDishes={allDishes}
+        onSelect={dish => {
+          if (replaceTarget) {
+            void replaceDish(dish)
+            return
+          }
+          void addDish(dish)
+        }}
+      />
+
+      <QuickAddSheet
+        open={quickAddTarget !== null}
+        onClose={() => setQuickAddTarget(null)}
+        onSaved={dish => {
+          void addDish(dish)
+        }}
+        title="Add dish to weekly menu"
+      />
     </div>
   )
 }

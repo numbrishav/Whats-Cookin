@@ -4,33 +4,13 @@ import { db } from '@/db/schema'
 import { daysAgo } from '@/lib/dates'
 import { DishEditSheet } from '@/components/dishes/DishEditSheet'
 import { QuickAddSheet } from '@/components/shared/QuickAddSheet'
-import type { Dish, DishCategory, DietType } from '@/types'
+import type { Dish, DietType } from '@/types'
+import { FOOD_CLASS_DISPLAY, resolveFoodClass } from '@/lib/food-classes'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const CATEGORY_DISPLAY: Partial<Record<DishCategory, string>> = {
-  grain:                    'Grain / Staple',
-  protein_nonveg:           'Protein (NV)',
-  protein_eggitarian:       'Protein (Egg)',
-  protein_veg:              'Protein (Veg)',
-  curry_nonveg:             'Curry (NV)',
-  curry_eggitarian:         'Curry (Egg)',
-  curry_veg:                'Dal & Curry',
-  sukhi_sabzi_leafy:        'Leafy Sabzi',
-  sukhi_sabzi_light:        'Light Sabzi',
-  sukhi_sabzi_cruciferous:  'Cruciferous',
-  sukhi_sabzi_dry:          'Dry Sabzi',
-  sukhi_sabzi_mixed:        'Mixed Sabzi',
-  snack_nonveg:             'Snack (NV)',
-  snack_eggitarian:         'Snack (Egg)',
-  snack_veg:                'Snack',
-  dessert:                  'Dessert',
-  side:                     'Side',
-  salad:                    'Salad',
-}
-
-function categoryLabel(cat: DishCategory): string {
-  return CATEGORY_DISPLAY[cat] ?? cat.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+function categoryLabel(dish: Dish): string {
+  return FOOD_CLASS_DISPLAY[resolveFoodClass(dish)]
 }
 
 const DIET_DOT: Record<DietType, string> = {
@@ -146,7 +126,7 @@ function DishRow({ dish, onTap, onArchive, onDelete }: {
               backgroundColor: 'var(--surface)', borderRadius: 6,
               padding: '1px 6px', display: 'inline-block',
             }}>
-              {categoryLabel(dish.category)}
+              {categoryLabel(dish)}
             </span>
             {lastUsedNote && (
               <span style={{ fontSize: 12, color: '#AEAEB2' }}>{lastUsedNote}</span>
@@ -166,18 +146,18 @@ function DishRow({ dish, onTap, onArchive, onDelete }: {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function DishLibraryPage() {
-  const [categoryFilter, setCategoryFilter] = useState<DishCategory | 'all'>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [dietFilter, setDietFilter] = useState<DietType | 'all'>('all')
   const [editDish, setEditDish] = useState<Dish | null>(null)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
   const allDishes = useLiveQuery(() => db.dishes.toArray(), []) ?? []
 
-  // Derive unique categories present in library
-  const presentCategories = [...new Set(allDishes.map(d => d.category))].sort()
+  // Derive unique food_classes present in library (display-friendly, deduplicated)
+  const presentClasses = [...new Set(allDishes.map(d => resolveFoodClass(d)))].sort()
 
   const filtered = allDishes
-    .filter(d => categoryFilter === 'all' || d.category === categoryFilter)
+    .filter(d => categoryFilter === 'all' || resolveFoodClass(d) === categoryFilter)
     .filter(d => dietFilter === 'all' || d.type === dietFilter)
     .sort((a, b) => a.name.localeCompare(b.name))
 
@@ -246,9 +226,9 @@ export function DishLibraryPage() {
         {/* Category chips */}
         <div style={{ overflowX: 'auto', paddingLeft: 20, paddingBottom: 10, display: 'flex', gap: 8 }}>
           <button style={chipStyle(categoryFilter === 'all')} onClick={() => setCategoryFilter('all')}>All</button>
-          {presentCategories.map(cat => (
-            <button key={cat} style={chipStyle(categoryFilter === cat)} onClick={() => setCategoryFilter(cat)}>
-              {categoryLabel(cat)}
+          {presentClasses.map(fc => (
+            <button key={fc} style={chipStyle(categoryFilter === fc)} onClick={() => setCategoryFilter(fc)}>
+              {FOOD_CLASS_DISPLAY[fc]}
             </button>
           ))}
         </div>

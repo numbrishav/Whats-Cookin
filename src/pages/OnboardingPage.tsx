@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '@/db/schema'
 import { DEFAULT_GOALS } from '@/lib/seed'
-import type { DietType, RegionId, HouseholdMember, Goals, Dish, DishCategory, GoalArchetype } from '@/types'
+import { ensureDietChartRulesAndPlans } from '@/lib/weekly-menu'
+import type { DietType, RegionId, HouseholdMember, Goals, Dish, GoalArchetype } from '@/types'
+import { resolveFoodClass } from '@/lib/food-classes'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,24 +40,71 @@ const REGION_OPTIONS: { value: RegionId; label: string; hint: string; color: str
   { value: 'pan_indian',      label: 'Pan-Indian',      hint: 'Works everywhere — mixed background',       color: '#6B7280', bg: '#F9FAFB' },
 ]
 
-const CATEGORY_LABELS: Partial<Record<DishCategory, string>> = {
-  grain: 'Grains',
-  protein_nonveg: 'Non-veg Protein',
-  protein_eggitarian: 'Egg Protein',
-  protein_veg: 'Veg Protein',
-  curry_nonveg: 'Non-veg Curry',
-  curry_eggitarian: 'Egg-based Curry',
-  curry_veg: 'Dal & Veg Curry',
-  sukhi_sabzi_leafy: 'Leafy Sabzi',
-  sukhi_sabzi_light: 'Light Sabzi',
-  sukhi_sabzi_cruciferous: 'Cruciferous Sabzi',
-  sukhi_sabzi_dry: 'Dry Sabzi',
-  sukhi_sabzi_mixed: 'Mixed Sabzi',
-  snack_nonveg: 'Non-veg Snacks',
-  snack_eggitarian: 'Egg Snacks',
-  snack_veg: 'Veg Snacks',
-  dessert: 'Desserts',
-  side: 'Sides',
+// ─── Library meal tabs and display groups ────────────────────────────────────
+
+type LibraryMeal = 'breakfast' | 'lunch' | 'evening_snacks' | 'dinner' | 'desserts'
+type DisplayGroup = 'one_pot' | 'staples' | 'mains' | 'veggies_sides'
+
+interface LibraryMealTab {
+  id: LibraryMeal
+  label: string
+  question: string
+  canSkip: boolean
+  hasGroups: boolean
+}
+
+const LIBRARY_MEAL_TABS: LibraryMealTab[] = [
+  { id: 'breakfast',      label: 'Breakfast',     question: 'What do you cook for breakfast?',      canSkip: true,  hasGroups: false },
+  { id: 'lunch',          label: 'Lunch',          question: 'What do you cook for lunch?',          canSkip: false, hasGroups: true  },
+  { id: 'evening_snacks', label: 'Evening Snacks', question: 'What do you have for evening snacks?', canSkip: true,  hasGroups: false },
+  { id: 'dinner',         label: 'Dinner',         question: 'What do you cook for dinner?',         canSkip: false, hasGroups: true  },
+  { id: 'desserts',       label: 'Desserts',       question: 'Any sweet endings to add?',            canSkip: true,  hasGroups: false },
+]
+
+const DISPLAY_GROUP_LABELS: Record<DisplayGroup, string> = {
+  one_pot:       'One-Pot Meals',
+  staples:       'Staples',
+  mains:         'Mains',
+  veggies_sides: 'Veggies & Sides',
+}
+
+const DISPLAY_GROUP_SUBTITLES: Partial<Record<DisplayGroup, string>> = {
+  one_pot: 'A complete meal — replaces your roti + dal',
+}
+
+const DISPLAY_GROUP_ORDER: DisplayGroup[] = [
+  'one_pot', 'staples', 'mains', 'veggies_sides',
+]
+
+// A dish can appear on every onboarding tab where it is genuinely relevant.
+// This avoids starving lunch when many staples and mains are valid for both lunch and dinner.
+function isDishShownInLibraryMeal(dish: Dish, meal: LibraryMeal): boolean {
+  const occ = (dish.occasion ?? []) as string[]
+  if (meal === 'breakfast') return occ.includes('breakfast')
+  if (meal === 'lunch') return occ.includes('lunch')
+  if (meal === 'dinner') return occ.includes('dinner')
+  if (meal === 'evening_snacks') return occ.includes('evening_snack')
+  if (meal === 'desserts') return occ.includes('dessert')
+  return false
+}
+
+// Maps a dish's food_class to the onboarding display group.
+// Uses resolveFoodClass() from src/lib/food-classes.ts — the canonical source.
+const FOOD_CLASS_TO_GROUP: Partial<Record<string, DisplayGroup>> = {
+  one_pot:           'one_pot',
+  grain_staple:      'staples',
+  liquid:            'mains',
+  curry:             'mains',
+  dry_semi_dry:      'veggies_sides',
+  greens:            'veggies_sides',
+  side_condiment:    'veggies_sides',
+  snack_finger_food: 'veggies_sides',
+  dessert:           'veggies_sides',
+}
+
+function getDisplayGroup(dish: Dish): DisplayGroup {
+  const fc = resolveFoodClass(dish)
+  return FOOD_CLASS_TO_GROUP[fc] ?? 'veggies_sides'
 }
 
 // Vite needs explicit import paths for bundling — cast because JSON category fields are `string`, not `DishCategory`
@@ -521,16 +570,65 @@ function ScreenDietChart({ onSkip, onSetup }: { onSkip: () => void; onSetup: () 
   )
 }
 
-// ─── Screen E — Library confirmation ─────────────────────────────────────────
+// ─── Screen E — Library confirmation (5-screen step-through) ─────────────────
+
+function DietDot({ type }: { type?: string }) {
+  if (type === 'nonveg')     return <span className="flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: '#C0392B' }} />
+  if (type === 'eggitarian') return <span className="flex-shrink-0 w-2 h-2 rounded-full" style={{ backgroundColor: '#9A5700' }} />
+  return null
+}
+
+function DishRow({
+  dish,
+  isExcluded,
+  onToggle,
+  borderBottom,
+}: {
+  dish: Dish
+  isExcluded: boolean
+  onToggle: () => void
+  borderBottom: boolean
+}) {
+  return (
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center gap-3 px-4 py-3 text-left transition-opacity active:opacity-70"
+      style={{
+        borderBottom: borderBottom ? '1px solid #F5EEE6' : 'none',
+        opacity: isExcluded ? 0.35 : 1,
+      }}
+    >
+      <div
+        className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+        style={{
+          backgroundColor: isExcluded ? '#F5EEE6' : '#1C1410',
+          border: isExcluded ? '1.5px solid #D1D1D6' : 'none',
+        }}
+      >
+        {!isExcluded && (
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </div>
+      <span className="flex-1 text-sm" style={{ color: '#1C1410' }}>{dish.name}</span>
+      <DietDot type={dish.type} />
+    </button>
+  )
+}
 
 function ScreenLibraryConfirm({
   members,
+  mealIndex,
+  onNextMeal,
   onConfirm,
 }: {
   members: HouseholdMember[]
+  mealIndex: number
+  onNextMeal: () => void
   onConfirm: (dishes: Dish[]) => void
 }) {
-  const [dishes, setDishes] = useState<Dish[]>([])
+  const [dishes, setDishes]   = useState<Dish[]>([])
   const [excluded, setExcluded] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
@@ -542,6 +640,11 @@ function ScreenLibraryConfirm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const tab    = LIBRARY_MEAL_TABS[mealIndex]
+  const isLast = mealIndex === LIBRARY_MEAL_TABS.length - 1
+
+  const mealDishes = dishes.filter(d => isDishShownInLibraryMeal(d, tab.id))
+
   function toggle(id: string) {
     setExcluded(prev => {
       const next = new Set(prev)
@@ -550,98 +653,141 @@ function ScreenLibraryConfirm({
     })
   }
 
-  function handleConfirm() {
-    const finalDishes = dishes.map(d =>
-      excluded.has(d.id) ? { ...d, status: 'reserve' as const } : d,
-    )
-    onConfirm(finalDishes)
+  function handlePrimary() {
+    if (isLast) {
+      onConfirm(dishes.map(d => excluded.has(d.id) ? { ...d, status: 'reserve' as const } : d))
+    } else {
+      onNextMeal()
+    }
   }
 
-  // Group by category
-  const grouped = new Map<DishCategory, Dish[]>()
-  for (const dish of dishes) {
-    if (!grouped.has(dish.category)) grouped.set(dish.category, [])
-    grouped.get(dish.category)!.push(dish)
-  }
-
-  const regionLabels = [...new Set(members.map(m => m.home_region ?? 'pan_indian'))]
-    .map(r => REGION_OPTIONS.find(o => o.value === r)?.label ?? r)
-    .join(' + ')
+  const selectedCount = dishes.length - excluded.size
 
   return (
-    <>
-      <h1 className="text-3xl font-bold tracking-tight mb-1" style={{ color: '#1C1410' }}>
-        Your starter library
+    <div className="flex-1 flex flex-col min-h-0">
+
+      {/* Meal progress dots */}
+      <div className="flex items-center gap-1.5 mb-5">
+        {LIBRARY_MEAL_TABS.map((t, i) => (
+          <div
+            key={t.id}
+            className="rounded-full transition-all duration-300"
+            style={{
+              width:  i === mealIndex ? 18 : 5,
+              height: 5,
+              backgroundColor: i <= mealIndex ? '#E8622A' : 'rgba(28,20,16,0.12)',
+            }}
+          />
+        ))}
+        <span className="text-xs ml-1" style={{ color: '#AFA49E' }}>
+          {tab.label}
+        </span>
+      </div>
+
+      {/* Heading */}
+      <h1 className="text-2xl font-bold tracking-tight mb-1" style={{ color: '#1C1410' }}>
+        {tab.question}
       </h1>
-      <p className="text-sm mb-1" style={{ color: '#6B5E57' }}>
-        Based on {regionLabels}. Uncheck anything you'd never cook.
-      </p>
       {!loading && (
-        <p className="text-xs mb-6" style={{ color: '#AFA49E' }}>
-          {dishes.length - excluded.size} dishes selected
-        </p>
+        <>
+          <p className="text-sm mb-1" style={{ color: '#6B5E57' }}>
+            We’re going meal by meal. Keep what you actually cook for {tab.label.toLowerCase()}.
+          </p>
+          <p className="text-xs mb-5" style={{ color: '#AFA49E' }}>
+            {selectedCount} dishes selected overall · Uncheck what you never cook
+          </p>
+        </>
       )}
 
+      {/* Body */}
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="w-7 h-7 rounded-full border-2 animate-spin"
             style={{ borderColor: 'rgba(28,20,16,0.12)', borderTopColor: '#1C1410' }} />
         </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto space-y-6 pb-4">
-          {Array.from(grouped.entries()).map(([cat, catDishes]) => (
-            <div key={cat}>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#6B5E57' }}>
-                {CATEGORY_LABELS[cat] ?? cat}
-              </p>
-              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-                {catDishes.map((dish, i) => (
-                  <button
-                    key={dish.id}
-                    onClick={() => toggle(dish.id)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left transition-opacity active:opacity-70"
-                    style={{
-                      borderBottom: i < catDishes.length - 1 ? '1px solid #F5EEE6' : 'none',
-                      opacity: excluded.has(dish.id) ? 0.4 : 1,
-                    }}
-                  >
-                    <span className="text-sm" style={{ color: '#1C1410' }}>{dish.name}</span>
-                    <div
-                      className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ml-3 transition-colors"
-                      style={{
-                        backgroundColor: excluded.has(dish.id) ? '#F5EEE6' : '#1C1410',
-                        border: excluded.has(dish.id) ? '1.5px solid #D1D1D6' : 'none',
-                      }}
-                    >
-                      {!excluded.has(dish.id) && (
-                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </div>
-                  </button>
-                ))}
+      ) : mealDishes.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
+          <p className="text-sm mb-1" style={{ color: '#6B5E57' }}>
+            No {tab.label.toLowerCase()} dishes in your regional seed.
+          </p>
+          <p className="text-xs" style={{ color: '#AFA49E' }}>
+            You can add them later from the Dish Library.
+          </p>
+        </div>
+      ) : tab.hasGroups ? (
+        /* Lunch / Dinner — grouped view */
+        <div className="flex-1 overflow-y-auto space-y-5 pb-4">
+          {DISPLAY_GROUP_ORDER.map(group => {
+            const groupDishes = mealDishes.filter(d => getDisplayGroup(d) === group)
+            if (groupDishes.length === 0) return null
+            const subtitle = DISPLAY_GROUP_SUBTITLES[group]
+            return (
+              <div key={group}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#6B5E57' }}>
+                  {DISPLAY_GROUP_LABELS[group]}
+                </p>
+                {subtitle && (
+                  <p className="text-xs mb-2" style={{ color: '#AFA49E' }}>{subtitle}</p>
+                )}
+                <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+                  {groupDishes.map((dish, i) => (
+                    <DishRow
+                      key={dish.id}
+                      dish={dish}
+                      isExcluded={excluded.has(dish.id)}
+                      onToggle={() => toggle(dish.id)}
+                      borderBottom={i < groupDishes.length - 1}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
+        </div>
+      ) : (
+        /* Breakfast / Snacks / Desserts — flat list */
+        <div className="flex-1 overflow-y-auto pb-4">
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+            {mealDishes.map((dish, i) => (
+              <DishRow
+                key={dish.id}
+                dish={dish}
+                isExcluded={excluded.has(dish.id)}
+                onToggle={() => toggle(dish.id)}
+                borderBottom={i < mealDishes.length - 1}
+              />
+            ))}
+          </div>
         </div>
       )}
 
+      {/* Navigation */}
       {!loading && (
         <div className="mt-4 space-y-2">
           <button
-            onClick={handleConfirm}
+            onClick={handlePrimary}
             className="w-full py-4 rounded-2xl text-base font-semibold transition-all active:scale-[0.98]"
             style={{ backgroundColor: '#1C1410', color: '#FFFFFF' }}
           >
-            Looks good, take me in →
+            {isLast ? 'Looks good, take me in →' : `Next: ${LIBRARY_MEAL_TABS[mealIndex + 1].label} →`}
           </button>
-          <p className="text-xs text-center" style={{ color: '#AFA49E' }}>
-            Unchecked dishes go to reserve — still available when swapping.
-          </p>
+          {tab.canSkip && !isLast && (
+            <button
+              onClick={onNextMeal}
+              className="w-full py-2 text-sm transition-all active:opacity-70"
+              style={{ color: '#AFA49E' }}
+            >
+              Skip {tab.label}
+            </button>
+          )}
+          {isLast && (
+            <p className="text-xs text-center" style={{ color: '#AFA49E' }}>
+              Unchecked dishes go to reserve — still available when swapping.
+            </p>
+          )}
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -680,6 +826,7 @@ export function OnboardingPage() {
     goals: { ...DEFAULT_GOALS },
   })
   const [goToDietChart, setGoToDietChart] = useState(false)
+  const [libraryMealIndex, setLibraryMealIndex] = useState(0)
 
   // ── Navigation ─────────────────────────────────────────────────────────────
 
@@ -704,10 +851,15 @@ export function OnboardingPage() {
 
   function handleDietChart(setup: boolean) {
     setGoToDietChart(setup)
+    setLibraryMealIndex(0)
     setStep({ kind: 'library_confirm' })
   }
 
   function handleBack() {
+    if (step.kind === 'library_confirm' && libraryMealIndex > 0) {
+      setLibraryMealIndex(prev => prev - 1)
+      return
+    }
     if (step.kind === 'person' && step.index === 0) {
       setStep({ kind: 'count' })
     } else if (step.kind === 'person') {
@@ -717,6 +869,7 @@ export function OnboardingPage() {
     } else if (step.kind === 'diet_chart') {
       setStep({ kind: 'goals' })
     } else if (step.kind === 'library_confirm') {
+      setLibraryMealIndex(0)
       setStep({ kind: 'diet_chart' })
     }
   }
@@ -745,6 +898,7 @@ export function OnboardingPage() {
       db.settings.put({ key: 'goals', value: draft.goals }),
       db.settings.put({ key: 'onboarding_complete', value: true }),
     ])
+    await ensureDietChartRulesAndPlans()
     navigate(goToDietChart ? '/diet-chart' : '/', { replace: true })
   }
 
@@ -794,6 +948,8 @@ export function OnboardingPage() {
       {step.kind === 'library_confirm' && (
         <ScreenLibraryConfirm
           members={draft.members}
+          mealIndex={libraryMealIndex}
+          onNextMeal={() => setLibraryMealIndex(prev => prev + 1)}
           onConfirm={handleLibraryConfirm}
         />
       )}

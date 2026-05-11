@@ -44,3 +44,19 @@ export function shortDayLabel(iso: string, todayIso: string): string {
 export function dayOfMonth(iso: string): string {
   return String(new Date(iso + 'T00:00:00').getDate())
 }
+
+export function startOfWeekMonday(referenceIso: string): string {
+  const date = new Date(referenceIso + 'T00:00:00')
+  const day = date.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  date.setDate(date.getDate() + diff)
+  return date.toISOString().split('T')[0]
+}
+
+export function currentWeekDates(referenceIso: string): { date: string; day: DayOfWeek }[] {
+  const monday = startOfWeekMonday(referenceIso)
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = offsetDate(monday, index)
+    return { date, day: dayOfWeekForDate(date) }
+  })
+}

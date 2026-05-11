@@ -163,20 +163,28 @@ Rules stored in `data/rules.json`. New rules can be added without code changes.
 
 ## Dish Library Structure
 
-Food classes are defined by **texture and consistency** — not by ingredient or protein type. Every dish belongs to exactly one food_class. See D-17 and D-18 in decisions-log.md for full rationale.
+> **Canonical food class table — single source of truth.**
+> Code, UI, docs, and data all derive from this. Do not maintain a separate mapping anywhere else.
+> Implemented in `src/lib/food-classes.ts`.
 
-### Food Classes
+### Food Classes → Display Names
 
-| food_class | meal_slot | What belongs here |
+| food_class | Display name | Swap pool examples |
 |---|---|---|
-| `grain_staple` | grain | Roti, rice, bread, one-pot grains (khichdi, biryani) |
-| `liquid` | liquid | Dal, kadhi, sambhar, rajma, chole, salan — thin to medium, spoonable |
-| `curry` | curry | Thick gravy dishes — chicken curry, egg curry, paneer masala |
-| `dry_semi_dry` | dry | No gravy — pan-fried proteins, bhujia, stir-fry sabzis |
-| `greens` | greens | Saag, salads, sprouts, kachumber |
-| `side_condiment` | side | Curd, raita, pickle, chutney — always additive, never a main slot |
-| `snack_finger_food` | snack | Standalone, no grain needed — tikka, omelette, boiled eggs |
-| `dessert` | dessert | Sweet, end-of-meal |
+| `one_pot` | One-Pot Meals | Khichdi ↔ Pongal ↔ Dal Dhokli |
+| `grain_staple` | Staples | Roti ↔ Rice ↔ Paratha |
+| `liquid` | Main Gravies & Lentils | Dal ↔ Rajma ↔ Sambhar |
+| `curry` | Main Gravies & Lentils | Chicken Curry ↔ Butter Chicken |
+| `dry_semi_dry` | Curries & Sabzis | Bhindi ↔ Aloo Jeera ↔ Poriyal |
+| `greens` | Leafy Veggies and Salad | Palak ↔ Lal Saag |
+| `side_condiment` | Condiments | Curd ↔ Raita ↔ Pickle |
+| `snack_finger_food` | Evening Snacks | Tikka ↔ Omelette |
+| `dessert` | Dessert | Ice Cream ↔ Dark Chocolate |
+
+**Notes:**
+- `liquid` and `curry` share the same display name but are separate food classes — their swap pools never mix. Dal swaps with dal; chicken curry swaps with chicken curry.
+- `one_pot` dishes also carry `fills_slots[]` to tell the engine which meal slots they satisfy (e.g. khichdi fills `["grain","liquid"]`). Swap logic for one_pot: find other one_pot dishes whose `fills_slots` is a superset of the current dish's slots.
+- Manual adds (QuickAdd, swap sheet) are never blocked by slot conflicts — `fills_slots` only affects auto-generation.
 
 ### Schema
 
@@ -187,37 +195,26 @@ Every item in the Dish Library has:
   "name": "Pan Fried Chicken",
   "food_class": "dry_semi_dry",
   "fills_slots": ["dry"],
-  "diet_type": "nonveg",         // veg | egg | nonveg
-  "status": "active",            // active (auto-suggested) | reserve (swap-sheet only)
+  "diet_type": "nonveg",
+  "status": "active",
   "meal_preference": ["lunch", "dinner"],
-  "person_scope": "nonveg",      // shared | nonveg | eggitarian
-  "protein_primary": true,       // true = counts toward protein goal scoring
-  "weight": "medium",            // light | medium | heavy
-  "cuisine": "north_indian",
+  "person_scope": "nonveg",
+  "protein_primary": true,
+  "weight": "medium",
+  "cuisine": ["up_bihari", "punjabi"],
   "tags": [],
-  "pairs_with": [],              // suggestion-layer hint only — no structural effect
-  "calories_per_serving": null,  // optional, display-only in v1
+  "pairs_with": [],
+  "calories_per_serving": null,
   "protein_g": null,
   "carbs_g": null,
   "fat_g": null,
-  "last_used": null              // ISO date, updated on meal approval only
+  "last_used": null
 }
 ```
 
-### One-pot dishes
+### Paired dishes
 
-Dishes that physically combine multiple food classes (khichdi = grain + dal, biryani = grain + protein) use `fills_slots` to declare which meal slots they satisfy:
-
-```json
-{ "id": "khichdi", "food_class": "grain_staple", "fills_slots": ["grain", "liquid"] }
-{ "id": "biryani", "food_class": "grain_staple", "fills_slots": ["grain", "protein"], "pairs_with": ["salan", "boondi_raita"] }
-```
-
-The engine marks all listed slots as filled when this dish is selected. `pairs_with` is a suggestion hint — it pre-weights those companion dishes but does not force them.
-
-### Structurally separate, suggestion-paired
-
-Paired dishes (pav + bhaji, bhatura + chole, biryani + salan) are **separate dish entries** — each has its own food_class. The suggestion engine uses `pairs_with` to co-select them. This keeps swaps clean: you can swap the bhaji without touching the pav.
+Paired dishes (Pav + Bhaji, Bhatura + Chole, Biryani + Salan) are **separate dish entries** in their own food_class. The suggestion engine uses `pairs_with` to co-select them. Swaps stay clean: swapping Bhaji only surfaces other curry-class dishes; the Pav is untouched.
 
 ---
 

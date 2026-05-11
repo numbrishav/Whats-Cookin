@@ -1,10 +1,29 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/schema'
 import { DEFAULT_GOALS, DEFAULT_HOUSEHOLD } from '@/lib/seed'
 import { supabase } from '@/lib/supabase'
-import type { Household, HouseholdMember, DietType, Goals } from '@/types'
-import rulesData from '../../data/rules.json'
+import {
+  AVOID_COMBINATION_OPTIONS,
+  BREAKFAST_SHAPE_OPTIONS,
+  DINNER_SHAPE_OPTIONS,
+  LUNCH_SHAPE_OPTIONS,
+  deriveDietChartRuleDefaults,
+  ensureDietChartRulesAndPlans,
+  regenerateDietChartMenu,
+  saveDietChartRulePrefs,
+} from '@/lib/weekly-menu'
+import type {
+  AvoidCombinationKey,
+  BreakfastShape,
+  DietChartRulePrefs,
+  DietType,
+  DinnerShape,
+  Goals,
+  Household,
+  HouseholdMember,
+  LunchShape,
+} from '@/types'
 
 const font = '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif'
 
@@ -21,16 +40,6 @@ const DIET_DOT_COLOR: Record<DietType, string> = {
 }
 
 const NAME_PRESETS = ['Me', 'Partner', 'Flatmate', 'Guest']
-
-interface FrequencyCapRule {
-  id: string
-  description: string
-}
-
-const FREQUENCY_CAPS: FrequencyCapRule[] = (rulesData.frequency_caps as Array<{ id: string; description: string }>).map(r => ({
-  id: r.id,
-  description: r.description,
-}))
 
 // ─── Stepper ──────────────────────────────────────────────────────────────────
 
@@ -122,6 +131,34 @@ function Card({ children }: { children: React.ReactNode }) {
 
 function Divider() {
   return <div className="h-px mx-4" style={{ backgroundColor: '#E5E5EA' }} />
+}
+
+function ChoicePills<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T
+  onChange: (value: T) => void
+  options: { value: T; label: string }[]
+}) {
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {options.map(option => (
+        <button
+          key={option.value}
+          onClick={() => onChange(option.value)}
+          className="px-3 py-1.5 rounded-full text-sm font-medium transition-all active:scale-95"
+          style={{
+            backgroundColor: value === option.value ? '#1D1D1F' : '#F5EEE6',
+            color: value === option.value ? '#FFFFFF' : '#3C3C43',
+          }}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 // ─── Member Row ───────────────────────────────────────────────────────────────
@@ -252,12 +289,22 @@ export function SettingsPage() {
     [],
   ) ?? DEFAULT_GOALS
 
-  const disabledRules = useLiveQuery(
-    () => db.settings.get('disabled_rules').then(s => (s?.value as string[]) ?? []),
-    [],
-  ) ?? []
+  const derivedDefaults = deriveDietChartRuleDefaults(household, goals)
+
+  const rulePrefs = useLiveQuery(
+    () => db.settings.get('diet_chart_rule_prefs').then(s => (s?.value as DietChartRulePrefs | undefined) ?? derivedDefaults.prefs),
+    [household, goals],
+    derivedDefaults.prefs,
+  ) ?? derivedDefaults.prefs
+
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [saveNote, setSaveNote] = useState<string | null>(null)
 
   const hasPrimaryNutrition = household.members.some(m => m.is_primary && m.tracks_nutrition)
+
+  useEffect(() => {
+    ensureDietChartRulesAndPlans()
+  }, [])
 
   async function saveHousehold(members: HouseholdMember[]) {
     const next: Household = { people_count: members.length, members }
@@ -290,14 +337,65 @@ export function SettingsPage() {
     await db.settings.put({ key: 'goals', value: next })
   }
 
-  async function toggleRule(ruleId: string, enabled: boolean) {
-    let next: string[]
-    if (enabled) {
-      next = disabledRules.filter(id => id !== ruleId)
-    } else {
-      next = [...disabledRules, ruleId]
+  function allowedNonVeg() {
+    return household.members.some(member => member.diet_type === 'nonveg')
+  }
+
+  function allowedEggs() {
+    return household.members.some(member => member.diet_type === 'eggitarian' || member.diet_type === 'nonveg')
+  }
+
+  async function updateRulePrefs(next: DietChartRulePrefs) {
+    await saveDietChartRulePrefs(next)
+    setSaveNote('Saved. Regenerate weekly menu to apply.')
+  }
+
+  async function updateHowOften<K extends keyof DietChartRulePrefs['how_often']>(key: K, value: number) {
+    await updateRulePrefs({
+      ...rulePrefs,
+      how_often: { ...rulePrefs.how_often, [key]: value },
+    })
+  }
+
+  async function updateBreakfastShape(value: BreakfastShape) {
+    await updateRulePrefs({
+      ...rulePrefs,
+      meal_shape: { ...rulePrefs.meal_shape, breakfast_shape: value },
+    })
+  }
+
+  async function updateLunchShape(value: LunchShape) {
+    await updateRulePrefs({
+      ...rulePrefs,
+      meal_shape: { ...rulePrefs.meal_shape, lunch_shape: value },
+    })
+  }
+
+  async function updateDinnerShape(value: DinnerShape) {
+    await updateRulePrefs({
+      ...rulePrefs,
+      meal_shape: { ...rulePrefs.meal_shape, dinner_shape: value },
+    })
+  }
+
+  async function toggleAvoidCombination(key: AvoidCombinationKey, enabled: boolean) {
+    await updateRulePrefs({
+      ...rulePrefs,
+      avoid_combinations: {
+        ...rulePrefs.avoid_combinations,
+        [key]: enabled,
+      },
+    })
+  }
+
+  async function regenerateWeeklyMenu() {
+    setIsRegenerating(true)
+    try {
+      await regenerateDietChartMenu()
+      setSaveNote('Weekly menu regenerated from your current food habits.')
+    } finally {
+      setIsRegenerating(false)
     }
-    await db.settings.put({ key: 'disabled_rules', value: next })
   }
 
   return (
@@ -390,24 +488,160 @@ export function SettingsPage() {
           </div>
         )}
 
-        {/* Section C — Rules */}
+        {/* Section C — Food habits */}
         <div className="mb-6">
-          <SectionHeader title="Rules" />
+          <SectionHeader title="Food Habits" />
           <Card>
-            {FREQUENCY_CAPS.map((rule, i) => {
-              const enabled = !disabledRules.includes(rule.id)
-              return (
-                <div key={rule.id}>
-                  <div className="flex items-center justify-between px-4 py-3.5">
-                    <p className="flex-1 pr-4 text-[15px]" style={{ color: '#1D1D1F', lineHeight: 1.4 }}>
-                      {rule.description}
-                    </p>
-                    <IOSToggle value={enabled} onChange={on => toggleRule(rule.id, on)} />
+            <div className="px-4 py-3.5">
+              <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>How often</p>
+              <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>These defaults shape first-time weekly menu generation and regenerate.</p>
+            </div>
+            <Divider />
+
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>Chicken</p>
+                <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>Times per week</p>
+              </div>
+              <Stepper
+                value={rulePrefs.how_often.chicken_per_week}
+                step={1}
+                min={0}
+                max={7}
+                onChange={v => { if (allowedNonVeg()) void updateHowOften('chicken_per_week', v) }}
+              />
+            </div>
+            <Divider />
+
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>Fish</p>
+                <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>Times per week</p>
+              </div>
+              <Stepper
+                value={rulePrefs.how_often.fish_per_week}
+                step={1}
+                min={0}
+                max={7}
+                onChange={v => { if (allowedNonVeg()) void updateHowOften('fish_per_week', v) }}
+              />
+            </div>
+            <Divider />
+
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>Eggs</p>
+                <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>Times per week</p>
+              </div>
+              <Stepper
+                value={rulePrefs.how_often.eggs_per_week}
+                step={1}
+                min={0}
+                max={7}
+                onChange={v => { if (allowedEggs()) void updateHowOften('eggs_per_week', v) }}
+              />
+            </div>
+            <Divider />
+
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>Paneer</p>
+                <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>Times per week</p>
+              </div>
+              <Stepper
+                value={rulePrefs.how_often.paneer_per_week}
+                step={1}
+                min={0}
+                max={7}
+                onChange={v => void updateHowOften('paneer_per_week', v)}
+              />
+            </div>
+            <Divider />
+
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>One-pot meals</p>
+                <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>Times per week</p>
+              </div>
+              <Stepper
+                value={rulePrefs.how_often.one_pot_per_week}
+                step={1}
+                min={0}
+                max={7}
+                onChange={v => void updateHowOften('one_pot_per_week', v)}
+              />
+            </div>
+
+            <Divider />
+            <div className="px-4 py-3.5">
+              <p className="text-[15px] font-medium" style={{ color: '#1D1D1F' }}>Meal shape</p>
+              <div className="mt-3">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6B5E57' }}>Breakfast</p>
+                <ChoicePills
+                  value={rulePrefs.meal_shape.breakfast_shape}
+                  onChange={value => void updateBreakfastShape(value)}
+                  options={BREAKFAST_SHAPE_OPTIONS.map(option => ({ value: option.value, label: option.label }))}
+                />
+              </div>
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6B5E57' }}>Lunch</p>
+                <ChoicePills
+                  value={rulePrefs.meal_shape.lunch_shape}
+                  onChange={value => void updateLunchShape(value)}
+                  options={LUNCH_SHAPE_OPTIONS.map(option => ({ value: option.value, label: option.label }))}
+                />
+              </div>
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#6B5E57' }}>Dinner</p>
+                <ChoicePills
+                  value={rulePrefs.meal_shape.dinner_shape}
+                  onChange={value => void updateDinnerShape(value)}
+                  options={DINNER_SHAPE_OPTIONS.map(option => ({ value: option.value, label: option.label }))}
+                />
+              </div>
+            </div>
+
+            <Divider />
+            <div className="px-4 py-3.5">
+              <p className="text-[15px] font-medium mb-3" style={{ color: '#1D1D1F' }}>Avoid these combinations</p>
+              <div className="space-y-3">
+                {AVOID_COMBINATION_OPTIONS.map(option => (
+                  <div key={option.key} className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[15px]" style={{ color: '#1D1D1F' }}>{option.label}</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#AFA49E' }}>{option.hint}</p>
+                    </div>
+                    <IOSToggle
+                      value={rulePrefs.avoid_combinations[option.key]}
+                      onChange={value => void toggleAvoidCombination(option.key, value)}
+                    />
                   </div>
-                  {i < FREQUENCY_CAPS.length - 1 && <Divider />}
-                </div>
-              )
-            })}
+                ))}
+              </div>
+            </div>
+
+            <Divider />
+            <div className="px-4 py-4">
+              <button
+                onClick={() => void regenerateWeeklyMenu()}
+                disabled={isRegenerating}
+                className="w-full py-3 rounded-2xl text-sm font-semibold transition-all active:scale-[0.98]"
+                style={{
+                  backgroundColor: isRegenerating ? '#E5E5EA' : '#1D1D1F',
+                  color: '#FFFFFF',
+                }}
+              >
+                {isRegenerating ? 'Regenerating…' : 'Regenerate Weekly Menu'}
+              </button>
+              <p className="text-xs mt-2" style={{ color: '#AFA49E' }}>
+                Manual edits stay on the schedule page. Regenerate only when you want a fresh week.
+              </p>
+              {saveNote && (
+                <p className="text-xs mt-2" style={{ color: '#6B5E57' }}>
+                  {saveNote}
+                </p>
+              )}
+            </div>
           </Card>
         </div>
 

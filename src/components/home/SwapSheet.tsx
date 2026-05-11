@@ -5,6 +5,7 @@ import { daysAgo } from '@/lib/dates'
 import type { Dish, MealComponent, RecommendationContext } from '@/types'
 import { getSwapOptions } from '@/engine/recommendation'
 import { QuickAddSheet } from '@/components/shared/QuickAddSheet'
+import { FOOD_CLASS_DISPLAY, resolveFoodClass } from '@/lib/food-classes'
 
 interface Props {
   open: boolean
@@ -25,7 +26,7 @@ export function SwapSheet({ open, onClose, target, allDishes, currentMealIds, ct
   const active = options.filter(d => d.status === 'active')
   const reserve = options.filter(d => d.status === 'reserve')
 
-  const categoryLabel = target.dish.category.replace(/_/g, ' ')
+  const categoryLabel = FOOD_CLASS_DISPLAY[resolveFoodClass(target.dish)]
 
   return (
     <>

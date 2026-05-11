@@ -85,13 +85,29 @@ function resolveDishReference(all: Dish[], reference: string, fallbackCategory: 
   if (!normalized || normalized === 'flexible_from_bank') return null
 
   const aliased = DISH_REF_ALIASES[normalized] ?? normalized
-  const resolved = all.find(dish =>
+
+  // Exact match: by ID or by normalized name
+  const exact = all.find(dish =>
     dish.id === aliased ||
     normalizeDishRef(dish.id) === aliased ||
     normalizeDishRef(dish.name) === aliased,
   )
+  if (exact) return exact
 
-  return resolved ?? createVirtualDish(reference, fallbackCategory)
+  // Prefix/contains fallback: handles cases like "roti" → "Roti / Phulka" (normalizes to "roti_phulka")
+  const fuzzy = all.find(dish => {
+    const normalizedName = normalizeDishRef(dish.name)
+    // dish name starts with the reference (e.g. "roti_phulka" starts with "roti")
+    if (normalizedName.startsWith(aliased + '_') || normalizedName === aliased) return true
+    // reference starts with the dish name (e.g. "roti" is a prefix of a longer ref)
+    if (aliased.startsWith(normalizedName + '_')) return true
+    // dish name contains the reference as a whole word segment
+    const segments = normalizedName.split('_')
+    return segments.includes(aliased)
+  })
+  if (fuzzy) return fuzzy
+
+  return createVirtualDish(reference, fallbackCategory)
 }
 
 function daysBetweenISO(currentISO: string, previousISO: string): number {
@@ -221,12 +237,23 @@ function preferenceBoost(dish: Dish, ctx: RecommendationContext): number {
   return 1.0
 }
 
-function scoreDish(dish: Dish, ctx: RecommendationContext, all: Dish[]): number {
+function pairsWithBoost(dish: Dish, currentMealIds: string[], all: Dish[]): number {
+  const normalizedDishName = normalizeDishRef(dish.name)
+  const pairingSources = all.filter(d =>
+    currentMealIds.includes(d.id) &&
+    d.pairs_with != null &&
+    (d.pairs_with.includes(dish.id) || d.pairs_with.includes(normalizedDishName)),
+  )
+  return pairingSources.length > 0 ? 1.5 : 1.0
+}
+
+function scoreDish(dish: Dish, ctx: RecommendationContext, all: Dish[], currentMealIds: string[] = []): number {
   const recency = recencyPenalty(dish, ctx)
   const frequency = frequencyPenalty(dish, ctx, all)
   const reservePenalty = dish.status === 'reserve' ? 0.3 : 1.0
   const randomness = Math.random() * 0.3 + 0.7
-  return randomness * recency * frequency * reservePenalty * preferenceBoost(dish, ctx)
+  const pairing = pairsWithBoost(dish, currentMealIds, all)
+  return randomness * recency * frequency * reservePenalty * preferenceBoost(dish, ctx) * pairing
 }
 
 function weightedPick<T extends { score: number }>(items: T[]): T | null {
@@ -259,7 +286,7 @@ function pickFromCategories(
       !exclude.includes(dish.id) &&
       !hasCombinationBlock(dish, exclude, all, ctx.slot),
     )
-    .map(dish => ({ dish, score: scoreDish(dish, ctx, all) }))
+    .map(dish => ({ dish, score: scoreDish(dish, ctx, all, exclude) }))
     .sort((left, right) => right.score - left.score)
 
   return weightedPick(scoredPool)?.dish ?? null
@@ -379,6 +406,17 @@ function hasSaladComponent(components: MealComponent[]): boolean {
   return components.some(component => component.dish.category === 'salad')
 }
 
+// Checks whether a one-pot grain dish already satisfies a given meal slot.
+// Used ONLY in auto-generation to avoid adding a redundant liquid/protein.
+// Manual adds (QuickAdd, swap sheet "add something") bypass this entirely —
+// the engine never blocks a user from adding sambhar alongside khichdi or any
+// other combination they choose. fills_slots is a suggestion hint, not a lock.
+function grainFillsSlot(components: MealComponent[], slot: string): boolean {
+  return components.some(
+    component => component.dish.category === 'grain' && (component.dish.fills_slots?.includes(slot) ?? false),
+  )
+}
+
 function ensureMainMealRequirements(
   components: MealComponent[],
   usedIds: string[],
@@ -393,7 +431,8 @@ function ensureMainMealRequirements(
     }
   }
 
-  if (!hasProteinComponent(components)) {
+  // Skip adding protein if already present OR if the grain dish fills the protein slot
+  if (!hasProteinComponent(components) && !grainFillsSlot(components, 'protein')) {
     for (const member of ctx.household.members) {
       const protein = pickFromCategories(all, PROTEIN_CATEGORIES[member.diet_type], member.diet_type, ctx, usedIds)
       if (!protein) continue
@@ -410,7 +449,8 @@ function ensureMainMealRequirements(
     }
   }
 
-  if (!hasSideComponent(components)) {
+  // Skip adding a side if the grain dish already fills the liquid slot (e.g. khichdi = grain + dal)
+  if (!hasSideComponent(components) && !grainFillsSlot(components, 'liquid')) {
     const side = pickFromCategories(all, ['side'], 'veg', ctx, usedIds)
     if (side) {
       pushComponent(components, side, 'shared')
@@ -436,12 +476,19 @@ function buildFallbackMainMeal(all: Dish[], ctx: RecommendationContext): MealCom
     trackRealDishId(usedIds, grain)
   }
 
-  for (const member of ctx.household.members) {
-    const protein = pickFromCategories(all, PROTEIN_CATEGORIES[member.diet_type], member.diet_type, ctx, usedIds)
-    if (!protein) continue
-    pushComponent(components, protein, scopeForMember(member))
-    trackRealDishId(usedIds, protein)
+  // If the grain fills the protein slot (e.g. biryani), skip picking a separate protein
+  const grainFillsProtein = grain?.fills_slots?.includes('protein') ?? false
+  if (!grainFillsProtein) {
+    for (const member of ctx.household.members) {
+      const protein = pickFromCategories(all, PROTEIN_CATEGORIES[member.diet_type], member.diet_type, ctx, usedIds)
+      if (!protein) continue
+      pushComponent(components, protein, scopeForMember(member))
+      trackRealDishId(usedIds, protein)
+    }
   }
+
+  // If the grain fills the liquid slot (e.g. khichdi, dal dhokli), skip picking a separate side/dal
+  const grainFillsLiquid = grain?.fills_slots?.includes('liquid') ?? false
 
   const sabzi = pickFromCategories(all, SABZI_CATEGORIES, 'veg', ctx, usedIds)
   if (sabzi) {
@@ -449,10 +496,12 @@ function buildFallbackMainMeal(all: Dish[], ctx: RecommendationContext): MealCom
     trackRealDishId(usedIds, sabzi)
   }
 
-  const side = pickFromCategories(all, ['side'], 'veg', ctx, usedIds)
-  if (side) {
-    pushComponent(components, side, 'shared')
-    trackRealDishId(usedIds, side)
+  if (!grainFillsLiquid) {
+    const side = pickFromCategories(all, ['side'], 'veg', ctx, usedIds)
+    if (side) {
+      pushComponent(components, side, 'shared')
+      trackRealDishId(usedIds, side)
+    }
   }
 
   const salad = resolveDishReference(all, 'kheera_pyaaz_salad', 'salad')
@@ -694,14 +743,30 @@ export function getSwapOptions(
 ): Dish[] {
   const remainingIds = currentMealIds.filter(id => id !== target.id)
 
+  // One-pot dishes (fills_slots.length > 1) have a different swap rule:
+  // a valid swap must cover a superset of the same slots.
+  // e.g. Khichdi [grain, liquid] can swap with Pongal [grain, liquid] or
+  // Bisi Bele Bath [grain, liquid, dry] — but NOT Biryani [grain, protein]
+  // which doesn't cover the liquid slot.
+  // All other dishes use standard same-category matching.
+  const targetSlots = target.fills_slots ?? []
+  const isOnePot = targetSlots.length > 1
+
   return all
-    .filter(dish =>
-      dish.category === target.category &&
-      dish.id !== target.id &&
-      !remainingIds.includes(dish.id) &&
-      !hasCombinationBlock(dish, remainingIds, all, ctx.slot),
-    )
-    .map(dish => ({ dish, score: scoreDish(dish, ctx, all) }))
+    .filter(dish => {
+      if (dish.id === target.id) return false
+      if (remainingIds.includes(dish.id)) return false
+      if (hasCombinationBlock(dish, remainingIds, all, ctx.slot)) return false
+
+      if (isOnePot) {
+        const candidateSlots = dish.fills_slots ?? []
+        // Candidate must fill at least every slot the target fills
+        return targetSlots.every(slot => candidateSlots.includes(slot))
+      }
+
+      return dish.category === target.category
+    })
+    .map(dish => ({ dish, score: scoreDish(dish, ctx, all, remainingIds) }))
     .sort((left, right) => right.score - left.score)
     .map(item => item.dish)
 }

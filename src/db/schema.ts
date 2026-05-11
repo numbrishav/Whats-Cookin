@@ -123,3 +123,14 @@ export async function approveMeal(meal: MealOutput) {
     await db.meals.put({ ...meal, approved: true })
   })
 }
+
+export async function upsertMealPlan(meal: MealOutput) {
+  const existing = await db.meal_plans.where({ date: meal.date, slot: meal.slot }).first()
+  await db.meal_plans.put({
+    id: existing?.id,
+    date: meal.date,
+    slot: meal.slot,
+    meal,
+    created_at: existing?.created_at ?? new Date().toISOString(),
+  })
+}
